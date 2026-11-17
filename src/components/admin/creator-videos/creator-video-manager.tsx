@@ -237,7 +237,7 @@ export function CreatorVideoManager({
               id: p.id,
               name: p.name,
               slug: p.slug,
-              mainImage: p.mainImage || "/category-smartphone.png",
+              mainImage: p.mainImage || "",
               price: p.price,
               category: typeof p.category === "string" ? p.category : p.category?.title,
             }))

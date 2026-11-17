@@ -19,28 +19,38 @@ import {
 } from "lucide-react";
 import { useCart, formatPrice } from "@/context/CartContext";
 
-const QUICK_ADD_ITEMS = [
-  {
-    id: "quick-p1",
-    slug: "the-havane",
-    name: "The Havane Shaker",
-    price: "RS. 16,500",
-    image: "/favior_shaker_white.png",
-    color: "Gloss White",
-    size: "600ml",
-  },
-  {
-    id: "quick-p2",
-    slug: "the-aube",
-    name: "The Aube Wrist Wraps",
-    price: "RS. 15,900",
-    image: "/favior_wristwrap_white.png",
-    color: "Stealth Black",
-    size: "18-Inch",
-  },
-];
-
 export function SideCartDrawer() {
+  const [quickAddItems, setQuickAddItems] = useState<Array<{
+    id: string;
+    slug: string;
+    name: string;
+    price: string;
+    image: string;
+    color: string;
+    size: string;
+  }>>([]);
+
+  useEffect(() => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data)) {
+          setQuickAddItems(
+            json.data.slice(0, 2).map((p: any) => ({
+              id: p.id,
+              slug: p.slug,
+              name: p.name,
+              price: `RS. ${p.price}`,
+              image: p.mainImage,
+              color: "Standard",
+              size: "Standard",
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const {
     cart,
     isOpen,
@@ -340,6 +350,7 @@ export function SideCartDrawer() {
                   </Link>
 
                   {/* Empty state Quick Add recommendations */}
+                  {quickAddItems.length > 0 && (
                   <div
                     style={{
                       width: "100%",
@@ -362,7 +373,7 @@ export function SideCartDrawer() {
                       Popular Selections
                     </h4>
                     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                      {QUICK_ADD_ITEMS.map((item) => (
+                      {quickAddItems.map((item) => (
                         <div
                           key={item.id}
                           style={{
@@ -435,6 +446,7 @@ export function SideCartDrawer() {
                       ))}
                     </div>
                   </div>
+                  )}
                 </div>
               ) : (
                 cart.map((item) => (

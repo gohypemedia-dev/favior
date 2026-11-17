@@ -216,7 +216,11 @@ export function ProductsTable({ products }: { products: ProductTableItem[] }) {
                   <td style={{"borderBottomWidth":"1px","borderColor":"rgb(0,0,0,0.1)","paddingLeft":"0.75rem","paddingRight":"0.75rem","paddingTop":"0.5rem","paddingBottom":"0.5rem"}}><input type="checkbox" checked={isSelected} onChange={() => toggleProduct(product.id)} aria-label={`Select ${product.name}`} /></td>
                   <td style={{"borderBottomWidth":"1px","borderColor":"rgb(0,0,0,0.1)","paddingLeft":"0.75rem","paddingRight":"0.75rem","paddingTop":"0.5rem","paddingBottom":"0.5rem"}}>
                     <Link href={`/dashboard/products/${itemSlugOrId}`} style={{"display":"flex","alignItems":"center","gap":"0.75rem","fontWeight":"500","color":"rgb(10,122,230)","textDecorationLine":"underline"}}>
-                      <div style={{"position":"relative","flexShrink":"0","overflow":"hidden","borderRadius":"0.375rem","borderWidth":"1px","borderColor":"rgb(0,0,0,0.1)","backgroundColor":"rgb(250,250,250)"}}><Image src={product.mainImage || "/category-smartphone.png"} alt={product.name} fill style={{"objectFit":"contain","padding":"0.25rem"}} /></div>
+                      <div style={{"position":"relative","flexShrink":"0","overflow":"hidden","borderRadius":"0.375rem","borderWidth":"1px","borderColor":"rgb(0,0,0,0.1)","backgroundColor":"rgb(250,250,250)", "width": "2rem", "height": "2rem"}}>
+                        {product.mainImage && (
+                          <Image src={product.mainImage} alt={product.name} fill style={{"objectFit":"contain","padding":"0.25rem"}} />
+                        )}
+                      </div>
                       <span style={{"maxWidth":"220px","overflow":"hidden","textOverflow":"ellipsis","whiteSpace":"nowrap"}}>{product.name}</span>
                     </Link>
                   </td>

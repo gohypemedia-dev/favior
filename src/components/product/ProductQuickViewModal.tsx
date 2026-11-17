@@ -113,7 +113,7 @@ export function ProductQuickViewModal({
     setCartState("adding")
     addToCart({
       id: product.slug,
-      image: product.gallery[0]?.src || "/images/products/product1.png",
+      image: product.gallery[0]?.src || "",
       title: product.title,
       size: selectedSize || "XS",
       price: product.price,
@@ -137,7 +137,7 @@ export function ProductQuickViewModal({
     try {
       addToCart({
         id: product.slug,
-        image: product.gallery[0]?.src || "/images/products/product1.png",
+        image: product.gallery[0]?.src || "",
         title: product.title,
         size: selectedSize || "XS",
         price: product.price,
@@ -234,7 +234,7 @@ export function ProductQuickViewModal({
               fill
               priority
               sizes="(max-width: 1024px) 100vw, 46vw"
-              className="object-cover object-center"
+              className="object-contain p-4 object-center"
             />
 
             {galleryImages.length > 1 ? (

@@ -1,9 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ProductCard, type Product } from "@/components/ProductCard";
-import { catalogProducts } from "@/components/collection/collectionData";
 
 interface ProductRecommendationsProps {
   currentSlug?: string;
@@ -20,12 +19,37 @@ export function ProductRecommendations({
   subtitle = "Complete Your Setup",
   limit = 4,
 }: ProductRecommendationsProps) {
+  const [dbProducts, setDbProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data)) {
+          const mapped: Product[] = json.data.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            desc: p.description,
+            price: `RS. ${p.price}`,
+            originalPrice: p.oldPrice ? `RS. ${p.oldPrice}` : undefined,
+            rating: p.rating,
+            reviews: parseInt(p.reviewsCount, 10) || 0,
+            img: p.mainImage,
+            gallery: [p.mainImage],
+            href: `/products/${p.slug}`,
+          }));
+          setDbProducts(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   // Normalize current identifier
   const normalizedSlug = currentSlug.toLowerCase().trim();
   const normalizedId = currentId.toLowerCase().trim();
 
   // Filter out the active product from the catalog
-  const filtered = catalogProducts.filter((item) => {
+  const filtered = dbProducts.filter((item) => {
     const itemSlug = item.href ? item.href.split("/").pop() || "" : "";
     return (
       item.id.toLowerCase() !== normalizedId &&
@@ -67,18 +91,6 @@ export function ProductRecommendations({
           style={{ marginBottom: "28px" }}
         >
           <div className="flex flex-col items-center sm:items-start">
-            {subtitle && (
-              <p
-                className="uppercase tracking-[0.22em] font-semibold"
-                style={{
-                  fontSize: "11px",
-                  color: "rgba(0, 0, 0, 0.5)",
-                  marginBottom: "4px",
-                }}
-              >
-                {subtitle}
-              </p>
-            )}
             <h2
               className="font-bold uppercase tracking-tight"
               style={{

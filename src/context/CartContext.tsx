@@ -113,7 +113,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const size = payload.size || "";
     const uniqueId = `${rawId}${color ? `-${color}` : ""}${size ? `-${size}` : ""}`;
     const name = payload.name || payload.title || "Favior Product";
-    const image = payload.image || payload.img || "/favior_shaker_white.png";
+    const image = payload.image || payload.img || "";
     const numericPrice = parseNumericPrice(payload.price);
     const rawPriceStr = typeof payload.price === "string" ? payload.price : formatPrice(numericPrice);
     const addQty = payload.quantity && payload.quantity > 0 ? payload.quantity : 1;

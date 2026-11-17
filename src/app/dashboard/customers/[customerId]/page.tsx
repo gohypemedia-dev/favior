@@ -165,7 +165,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                                 <div style={{"display":"flex","alignItems":"center","gap":"0.75rem"}}>
                                   <div style={{"position":"relative","flexShrink":"0","overflow":"hidden","borderRadius":"0.5rem","borderWidth":"1px","borderColor":"rgb(0,0,0,0.1)","backgroundColor":"rgb(255,255,255)","padding":"0.25rem"}}>
                                     <Image
-                                      src={item.product?.mainImage || "/category-smartphone.png"}
+                                      src={item.product?.mainImage || ""}
                                       alt={item.product?.name || "Product"}
                                       fill
                                       style={{"objectFit":"contain"}}

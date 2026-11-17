@@ -99,7 +99,7 @@ export function AddProductForm({ categories }: { categories: ProductCategoryOpti
           sortOrder,
         }))
       );
-      const mainImage = uploadedMedia[0]?.url || "/category-smartphone.png";
+      const mainImage = uploadedMedia[0]?.url || "";
       const response = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -161,9 +161,7 @@ export default function Navbar() {
           <div className="nav-left nav-desktop-left hidden lg:flex">
             <ul className="nav-category-links">
               <li><a href="/shakers">Shakers</a></li>
-              <li><a href="/wristbands">Wrist Wraps</a></li>
-              <li><a href="/accessories">Accessories</a></li>
-              <li><a href="/bundles">Bundles</a></li>
+              <li><a href="/collections">Collections</a></li>
             </ul>
           </div>
 
@@ -392,31 +390,11 @@ export default function Navbar() {
                   </svg>
                 </a>
                 <a
-                  href="/wristbands"
+                  href="/collections"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center justify-between h-[54px] border-b border-zinc-100 text-[13px] font-medium uppercase tracking-[0.08em] text-zinc-600 hover:text-zinc-900 transition-colors"
                 >
-                  <span>WRIST WRAPS</span>
-                  <svg className="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                  </svg>
-                </a>
-                <a
-                  href="/accessories"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between h-[54px] border-b border-zinc-100 text-[13px] font-medium uppercase tracking-[0.08em] text-zinc-600 hover:text-zinc-900 transition-colors"
-                >
-                  <span>ACCESSORIES</span>
-                  <svg className="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                  </svg>
-                </a>
-                <a
-                  href="/bundles"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between h-[54px] border-b border-zinc-100 text-[13px] font-medium uppercase tracking-[0.08em] text-zinc-600 hover:text-zinc-900 transition-colors"
-                >
-                  <span>BUNDLES</span>
+                  <span>COLLECTIONS</span>
                   <svg className="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                   </svg>

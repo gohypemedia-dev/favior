@@ -1,8 +1,6 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import React, { useState, useMemo } from "react";
 import { ProductGallery } from "./ProductGallery";
 import { ProductSummary } from "./ProductSummary";
 import { ProductHighlights } from "./ProductHighlights";
@@ -11,6 +9,39 @@ import { ProductRecommendations } from "./ProductRecommendations";
 import type { ProductDetail } from "./productData";
 
 export function ProductPage({ product }: { product: ProductDetail }) {
+  const isShaker =
+    (product.slug && product.slug.toLowerCase().includes("shaker")) ||
+    (product.title && product.title.toLowerCase().includes("shaker"));
+
+  const initialColor =
+    product.colors && product.colors.length > 0
+      ? product.colors[0].name
+      : product.colorName || "Standard";
+
+  const [selectedColor, setSelectedColor] = useState(initialColor);
+
+  // Dynamic gallery switching based on selected color for shaker
+  const currentGallery = useMemo(() => {
+    if (!isShaker) return product.gallery;
+
+    const isNude =
+      selectedColor.toLowerCase().includes("nude") ||
+      selectedColor.toLowerCase().includes("desert") ||
+      selectedColor.toLowerCase().includes("dune");
+
+    if (isNude) {
+      return [
+        { src: "/favior_pro_shaker_nude.jpg", alt: "Favior Dune Shaker (700ml) - Desert Nude" },
+        { src: "/favior_pro_shaker_black.jpg", alt: "Favior Phantom Shaker (700ml) - Stealth Black" },
+      ];
+    } else {
+      return [
+        { src: "/favior_pro_shaker_black.jpg", alt: "Favior Phantom Shaker (700ml) - Stealth Black" },
+        { src: "/favior_pro_shaker_nude.jpg", alt: "Favior Dune Shaker (700ml) - Desert Nude" },
+      ];
+    }
+  }, [isShaker, selectedColor, product.gallery]);
+
   return (
     <main
       style={{
@@ -33,69 +64,6 @@ export function ProductPage({ product }: { product: ProductDetail }) {
           boxSizing: "border-box",
         }}
       >
-        {/* Breadcrumb Navigation */}
-        <nav
-          aria-label="Breadcrumb"
-          style={{
-            marginBottom: "20px",
-          }}
-        >
-          <ol
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              gap: "6px",
-              listStyle: "none",
-              padding: 0,
-              margin: 0,
-              fontSize: "11px",
-              textTransform: "uppercase",
-              letterSpacing: "0.15em",
-              color: "#767676",
-              fontWeight: "500",
-            }}
-          >
-            {product.breadcrumb.map((crumb, index) => {
-              const isLast = index === product.breadcrumb.length - 1;
-              return (
-                <li
-                  key={`${crumb.label}-${index}`}
-                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
-                >
-                  {crumb.href && !isLast ? (
-                    <Link
-                      href={crumb.href}
-                      style={{
-                        color: "#767676",
-                        textDecoration: "none",
-                        transition: "color 0.2s ease",
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = "#111111")}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = "#767676")}
-                    >
-                      {crumb.label}
-                    </Link>
-                  ) : (
-                    <span
-                      style={{
-                        color: isLast ? "#111111" : "#767676",
-                        fontWeight: isLast ? "600" : "500",
-                      }}
-                    >
-                      {crumb.label}
-                    </span>
-                  )}
-                  {!isLast && (
-                    <ChevronRight
-                      style={{ width: "12px", height: "12px", color: "rgba(0,0,0,0.25)" }}
-                    />
-                  )}
-                </li>
-              );
-            })}
-          </ol>
-        </nav>
 
         {/* Grid Layout: Sticky Gallery (Left) & Summary (Right) */}
         <div
@@ -116,12 +84,17 @@ export function ProductPage({ product }: { product: ProductDetail }) {
               minWidth: 0,
             }}
           >
-            <ProductGallery images={product.gallery} />
+            <ProductGallery key={selectedColor} images={currentGallery} />
           </div>
 
           {/* Product Summary Column */}
           <div style={{ width: "100%", minWidth: 0 }}>
-            <ProductSummary product={product} />
+            <ProductSummary
+              product={product}
+              selectedColor={selectedColor}
+              onColorChange={setSelectedColor}
+              activeGallery={currentGallery}
+            />
           </div>
         </div>
       </section>

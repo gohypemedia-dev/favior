@@ -57,7 +57,7 @@ export const productsCatalog: Record<string, ProductDetailItem> = {
       { label: "Care", value: "Dishwasher Safe" },
     ],
     shippingNotice: "Free 2-day shipping on orders above RS. 5,000",
-    mainImage: "/favior_shaker_white.png",
+    mainImage: "/favior_pro_shaker_black.jpg",
   },
   "the-aube-wrist-wraps": {
     id: "the-aube-wrist-wraps",
@@ -86,7 +86,7 @@ export const productsCatalog: Record<string, ProductDetailItem> = {
       { label: "Level", value: "Professional Heavy Duty" },
     ],
     shippingNotice: "Free 2-day shipping on orders above RS. 5,000",
-    mainImage: "/favior_wristwrap_white.png",
+    mainImage: "/favior_pro_shaker_nude.jpg",
   },
   "favior-resistance-bands": {
     id: "favior-resistance-bands",
@@ -111,7 +111,7 @@ export const productsCatalog: Record<string, ProductDetailItem> = {
       { label: "Material", value: "Premium Fabric & Latex Blend" },
     ],
     shippingNotice: "Free 2-day shipping on orders above RS. 5,000",
-    mainImage: "/favior_bands_white.png",
+    mainImage: "/favior_luxury_towel.jpg",
   },
   "favior-complete-kit": {
     id: "favior-complete-kit",
@@ -138,7 +138,7 @@ export const productsCatalog: Record<string, ProductDetailItem> = {
       { label: "Bag Capacity", value: "40 Liters" },
     ],
     shippingNotice: "Free standard shipping included",
-    mainImage: "/favior_kit_white.png",
+    mainImage: "/favior_complete_gym_kit.jpg",
   }
 };
 

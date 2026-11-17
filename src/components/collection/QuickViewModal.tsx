@@ -30,11 +30,18 @@ export function QuickViewModal({
   const [added, setAdded] = useState(false);
 
   // Dynamic size options based on product category & name
+  const isItemShaker = (item: CatalogItem): boolean => {
+    const cat = item.category?.toLowerCase() || "";
+    const name = item.name?.toLowerCase() || "";
+    const id = item.id?.toLowerCase() || "";
+    return cat === "shakers" || name.includes("shaker") || id.includes("shaker");
+  };
+
   const getProductSizes = (item: CatalogItem): string[] => {
     const cat = item.category?.toLowerCase() || "";
     const name = item.name?.toLowerCase() || "";
     if (cat === "shakers" || name.includes("shaker") || name.includes("flask")) {
-      return ["600ML", "750ML", "1000ML"];
+      return ["700ML"];
     }
     if (cat === "wristbands" || name.includes("wrist") || name.includes("strap")) {
       return ["18-INCH", "24-INCH"];
@@ -47,6 +54,12 @@ export function QuickViewModal({
 
   // Dynamic color names based on product colorName & swatches
   const getProductColorNames = (item: CatalogItem): string[] => {
+    if (isItemShaker(item)) {
+      const isNude =
+        (item.colorName && item.colorName.toLowerCase().includes("nude")) ||
+        (item.name && (item.name.toLowerCase().includes("nude") || item.name.toLowerCase().includes("dune")));
+      return isNude ? ["Desert Nude", "Stealth Black"] : ["Stealth Black", "Desert Nude"];
+    }
     const baseColor = item.colorName?.toUpperCase() || "STEALTH BLACK";
     if (item.swatches && item.swatches.length > 1) {
       if (item.swatches.length === 2) return [baseColor, "STEALTH BLACK"];
@@ -87,35 +100,66 @@ export function QuickViewModal({
   const productSizes = getProductSizes(product);
   const colorNames = getProductColorNames(product);
 
-  const defaultImg = product.img || "/favior_shaker_white.png";
-  const gallery =
-    product.gallery && product.gallery.length > 0
-      ? product.gallery
-      : [defaultImg];
+  const isShaker = isItemShaker(product);
+  const isNudeSelected =
+    isShaker &&
+    (selectedColor.toLowerCase().includes("nude") ||
+      selectedColor.toLowerCase().includes("desert") ||
+      selectedColor.toLowerCase().includes("dune"));
+
+  const activeTitle = isShaker
+    ? isNudeSelected
+      ? "Favior Dune Shaker (700ml)"
+      : "Favior Phantom Shaker (700ml)"
+    : product.name;
+
+  const activeSlug = isShaker
+    ? isNudeSelected
+      ? "favior-pro-series-shaker-700ml-desert-nude"
+      : "favior-pro-series-shaker-stealth-black"
+    : product.id;
+
+  const defaultImg = isShaker
+    ? isNudeSelected
+      ? "/favior_pro_shaker_nude.jpg"
+      : "/favior_pro_shaker_black.jpg"
+    : product.img || product.image || "";
+
+  const gallery = isShaker
+    ? isNudeSelected
+      ? ["/favior_pro_shaker_nude.jpg", "/favior_pro_shaker_black.jpg"]
+      : ["/favior_pro_shaker_black.jpg", "/favior_pro_shaker_nude.jpg"]
+    : product.gallery && product.gallery.length > 0
+    ? product.gallery
+    : defaultImg
+    ? [defaultImg]
+    : [];
+
   const activeImgSrc = gallery[activeImageIndex] || defaultImg;
 
-  const productUrl =
-    product.id === "p1"
-      ? "/products/the-havane"
-      : product.id === "p2"
-      ? "/products/the-aube"
-      : product.id === "p3"
-      ? "/products/the-lumen"
-      : product.id === "p4"
-      ? "/products/the-brume"
-      : `/products/${product.id}`;
+  const productUrl = isShaker
+    ? `/products/${activeSlug}`
+    : product.id === "p1"
+    ? "/products/favior-heritage-gym-duffle-bag"
+    : product.id === "p2"
+    ? "/products/favior-pro-series-shaker-stealth-black"
+    : product.id === "p3"
+    ? "/products/favior-pro-series-shaker-700ml-desert-nude"
+    : product.id === "p4"
+    ? "/products/favior-luxury-gym-towel"
+    : `/products/${product.id}`;
 
   const handleAdd = () => {
     if (product) {
       addToCart({
-        id: product.id,
-        name: product.name,
+        id: activeSlug,
+        name: activeTitle,
         price: product.price,
         originalPrice: product.originalPrice,
-        image: product.image,
+        image: activeImgSrc,
         color: selectedColor,
         size: selectedSize,
-        slug: product.id,
+        slug: activeSlug,
       });
       onAddToCart?.(product);
       setAdded(true);
@@ -364,7 +408,7 @@ export function QuickViewModal({
                   wordBreak: "break-word",
                 }}
               >
-                {product.name}
+                {activeTitle}
               </h2>
 
               {/* Price & Rating / Sold Row */}
@@ -426,39 +470,77 @@ export function QuickViewModal({
                   COLOR <span style={{ fontWeight: 700, color: "#000" }}>{selectedColor}</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                  {(product.swatches && product.swatches.length > 0
-                    ? product.swatches
-                    : ["#111111", "#444444"]
-                  ).map((swatch, idx) => {
-                    const name = colorNames[idx % colorNames.length] || `OPTION ${idx + 1}`;
-                    const isSelected = selectedColor === name;
-                    return (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setSelectedColor(name)}
-                        style={{
-                          width: "44px",
-                          height: "28px",
-                          border: isSelected ? "2px solid #000" : "1px solid #d4d4d4",
-                          cursor: "pointer",
-                          padding: "2px",
-                          backgroundColor: "transparent",
-                          boxSizing: "border-box",
-                        }}
-                        title={name}
-                      >
-                        <span
-                          style={{
-                            display: "block",
-                            width: "100%",
-                            height: "100%",
-                            backgroundColor: swatch,
+                  {isShaker ? (
+                    [
+                      { name: "Stealth Black", swatch: "#111111" },
+                      { name: "Desert Nude", swatch: "#D2B48C" },
+                    ].map((opt) => {
+                      const isSelected = selectedColor.toLowerCase() === opt.name.toLowerCase();
+                      return (
+                        <button
+                          key={opt.name}
+                          type="button"
+                          onClick={() => {
+                            setSelectedColor(opt.name);
+                            setActiveImageIndex(0);
                           }}
-                        />
-                      </button>
-                    );
-                  })}
+                          style={{
+                            width: "44px",
+                            height: "28px",
+                            border: isSelected ? "2px solid #000" : "1px solid #d4d4d4",
+                            cursor: "pointer",
+                            padding: "2px",
+                            backgroundColor: "transparent",
+                            boxSizing: "border-box",
+                          }}
+                          title={opt.name}
+                        >
+                          <span
+                            style={{
+                              display: "block",
+                              width: "100%",
+                              height: "100%",
+                              backgroundColor: opt.swatch,
+                            }}
+                          />
+                        </button>
+                      );
+                    })
+                  ) : (
+                    (product.swatches && product.swatches.length > 0
+                      ? product.swatches
+                      : ["#111111", "#444444"]
+                    ).map((swatch, idx) => {
+                      const name = colorNames[idx % colorNames.length] || `OPTION ${idx + 1}`;
+                      const isSelected = selectedColor === name;
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setSelectedColor(name)}
+                          style={{
+                            width: "44px",
+                            height: "28px",
+                            border: isSelected ? "2px solid #000" : "1px solid #d4d4d4",
+                            cursor: "pointer",
+                            padding: "2px",
+                            backgroundColor: "transparent",
+                            boxSizing: "border-box",
+                          }}
+                          title={name}
+                        >
+                          <span
+                            style={{
+                              display: "block",
+                              width: "100%",
+                              height: "100%",
+                              backgroundColor: swatch,
+                            }}
+                          />
+                        </button>
+                      );
+                    })
+                  )}
                 </div>
               </div>
 

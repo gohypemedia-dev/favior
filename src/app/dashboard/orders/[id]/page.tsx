@@ -275,7 +275,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
                   <div style={{"borderTopWidth":"calc(1px * calc(1 - 0))","borderBottomWidth":"calc(1px * 0)","borderColor":"rgb(0,0,0,0.1)"}}>
                     {order.items.map((item) => {
-                      const image = item.product?.mainImage || "/category-smartphone.png";
+                      const image = item.product?.mainImage || "";
                       const name = item.product?.name || "Favior Product";
                       const slug = item.product?.slug || item.product?.id;
 

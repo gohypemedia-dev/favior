@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Model3D from "@/components/Model3D";
 import { Check } from "lucide-react";
 import { useCart } from "@/context/CartContext";
@@ -11,7 +12,8 @@ const SHAKER_VARIANTS = [
 ];
 
 export default function Model3DSection() {
-  const { addToCart } = useCart();
+  const router = useRouter();
+  const { addToCart, openCart } = useCart();
   const [localVariant, setLocalVariant] = useState(SHAKER_VARIANTS[0]); // Default 300ml
   const [added, setAdded] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
@@ -31,13 +33,27 @@ export default function Model3DSection() {
       id: `favior-pro-shaker-${localVariant.name}`,
       name: `Favior Pro Shaker (${localVariant.name})`,
       price: `₹${localVariant.price}`,
-      image: "/favior_shaker_white.png",
-      color: "Gloss White",
+      image: "/favior_pro_shaker_black.jpg",
+      color: "Matte Black",
       size: localVariant.name,
-      slug: "the-havane",
+      slug: "favior-pro-series-shaker-stealth-black",
     });
     setAdded(true);
+    openCart();
     setTimeout(() => setAdded(false), 2000);
+  };
+
+  const handleBuyNow = () => {
+    addToCart({
+      id: `favior-pro-shaker-${localVariant.name}`,
+      name: `Favior Pro Shaker (${localVariant.name})`,
+      price: `₹${localVariant.price}`,
+      image: "/favior_pro_shaker_black.jpg",
+      color: "Matte Black",
+      size: localVariant.name,
+      slug: "favior-pro-series-shaker-stealth-black",
+    });
+    router.push("/checkout");
   };
 
   return (
@@ -154,7 +170,8 @@ export default function Model3DSection() {
             {/* Action Buttons */}
             <div className="hero-action-row">
               <button
-                onClick={() => alert("Proceeding to checkout...")}
+                type="button"
+                onClick={handleBuyNow}
                 className="hero-btn-buy"
               >
                 Buy Now

@@ -3,8 +3,20 @@ import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import SiteFooter from "@/components/SiteFooter";
+import { db } from "@/lib/db";
 
-export default function StoryPage() {
+export const dynamic = "force-dynamic";
+
+export default async function StoryPage() {
+  const dbProducts = await db.product.findMany({
+    take: 4,
+    orderBy: { createdAt: "desc" },
+    select: { id: true, name: true, mainImage: true },
+  });
+
+  const heroImg = dbProducts[0]?.mainImage || "";
+  const subImg1 = dbProducts[1]?.mainImage || "";
+  const subImg2 = dbProducts[2]?.mainImage || "";
   return (
     <div className="bg-white text-zinc-900 font-sans overflow-x-hidden">
       {/* Navigation */}
@@ -62,12 +74,14 @@ export default function StoryPage() {
               overflow: "hidden" 
             }}>
               <div className="absolute inset-0 bg-black/5 z-10 transition-colors hover:bg-transparent"></div>
-              <Image 
-                src="/favior_shaker_white.png" 
-                alt="Favior Shaker" 
-                fill 
-                style={{ objectFit: "cover", objectPosition: "center" }}
-              />
+              {heroImg && (
+                <Image 
+                  src={heroImg} 
+                  alt="Favior Product" 
+                  fill 
+                  style={{ objectFit: "contain", objectPosition: "center", padding: "16px" }}
+                />
+              )}
             </div>
             
             {/* Text Box - Intrinsic Responsive Flex */}
@@ -202,8 +216,8 @@ export default function StoryPage() {
             {/* Images Box */}
             <div style={{ flex: "1 1 400px", minWidth: 0, display: "flex", gap: "1rem" }}>
               <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "1rem" }}>
-                <div style={{ position: "relative", height: "clamp(150px, 25vw, 250px)", borderRadius: "1rem", overflow: "hidden" }}>
-                  <Image src="/favior_wristwrap_white.png" alt="Wrist Wrap" fill style={{ objectFit: "cover" }} />
+                <div style={{ position: "relative", height: "clamp(150px, 25vw, 250px)", borderRadius: "1rem", overflow: "hidden", backgroundColor: "#f9f9f9" }}>
+                  {subImg1 && <Image src={subImg1} alt="Favior Product" fill style={{ objectFit: "contain", padding: "12px" }} />}
                 </div>
                 <div style={{ position: "relative", height: "clamp(100px, 15vw, 150px)", borderRadius: "1rem", overflow: "hidden", backgroundColor: "#f4f4f5", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <span style={{ color: "#a1a1aa", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", fontSize: "0.75rem" }}>
@@ -217,8 +231,8 @@ export default function StoryPage() {
                     Crafted
                   </span>
                 </div>
-                <div style={{ position: "relative", height: "clamp(150px, 25vw, 250px)", borderRadius: "1rem", overflow: "hidden" }}>
-                  <Image src="/favior_kit_white.png" alt="Kit" fill style={{ objectFit: "cover" }} />
+                <div style={{ position: "relative", height: "clamp(150px, 25vw, 250px)", borderRadius: "1rem", overflow: "hidden", backgroundColor: "#f9f9f9" }}>
+                  {subImg2 && <Image src={subImg2} alt="Favior Product" fill style={{ objectFit: "contain", padding: "12px" }} />}
                 </div>
               </div>
             </div>

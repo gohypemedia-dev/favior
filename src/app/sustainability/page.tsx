@@ -2,8 +2,21 @@ import React from "react";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import SiteFooter from "@/components/SiteFooter";
+import { db } from "@/lib/db";
 
-export default function MaterialsCraftPage() {
+export const dynamic = "force-dynamic";
+
+export default async function MaterialsCraftPage() {
+  const dbProducts = await db.product.findMany({
+    take: 3,
+    orderBy: { createdAt: "desc" },
+    select: { id: true, name: true, mainImage: true },
+  });
+
+  const heroImg = dbProducts[0]?.mainImage || "";
+  const detailImg1 = dbProducts[1]?.mainImage || dbProducts[0]?.mainImage || "";
+  const detailImg2 = dbProducts[2]?.mainImage || dbProducts[0]?.mainImage || "";
+
   return (
     <div className="bg-white text-zinc-900 font-sans overflow-x-hidden min-h-screen">
       {/* Navigation */}
@@ -13,7 +26,14 @@ export default function MaterialsCraftPage() {
         {/* Hero Section */}
         <section className="relative px-6 md:px-12 py-16 md:py-32 flex flex-col items-center justify-center text-center overflow-hidden min-h-[50vh] bg-black text-white">
           {/* Subtle background image/texture overlay */}
-          <div className="absolute inset-0 opacity-40 bg-[url('/favior_kit_white.png')] bg-cover bg-center grayscale"></div>
+          {heroImg ? (
+            <div
+              className="absolute inset-0 opacity-30 bg-cover bg-center grayscale"
+              style={{ backgroundImage: `url('${heroImg}')` }}
+            />
+          ) : (
+            <div className="absolute inset-0 bg-neutral-900" />
+          )}
           <div className="absolute inset-0 bg-black/70"></div>
 
           <div className="max-w-4xl mx-auto flex flex-col gap-4 md:gap-6 relative z-10">
@@ -70,13 +90,27 @@ export default function MaterialsCraftPage() {
             {/* Image Grid Box */}
             <div className="w-full lg:w-1/2 grid grid-cols-2 gap-3 md:gap-4 order-1 lg:order-2">
               <div className="flex flex-col gap-3 md:gap-4 pt-6 md:pt-12">
-                <div className="relative h-40 sm:h-56 md:h-80 rounded-2xl md:rounded-3xl overflow-hidden group">
-                  <Image src="/favior_shaker_white.png" alt="Stainless Steel Shaker" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                <div className="relative h-40 sm:h-56 md:h-80 rounded-2xl md:rounded-3xl overflow-hidden bg-neutral-50 group">
+                  {detailImg1 && (
+                    <Image
+                      src={detailImg1}
+                      alt="Favior Athletic Gear"
+                      fill
+                      className="object-contain p-4 group-hover:scale-105 transition-transform duration-700"
+                    />
+                  )}
                 </div>
               </div>
               <div className="flex flex-col gap-3 md:gap-4">
-                <div className="relative h-40 sm:h-56 md:h-80 rounded-2xl md:rounded-3xl overflow-hidden bg-zinc-100 group">
-                   <Image src="/favior_wristwrap_white.png" alt="Wrist Wraps Material" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                <div className="relative h-40 sm:h-56 md:h-80 rounded-2xl md:rounded-3xl overflow-hidden bg-neutral-50 group">
+                  {detailImg2 && (
+                    <Image
+                      src={detailImg2}
+                      alt="Favior Athletic Gear"
+                      fill
+                      className="object-contain p-4 group-hover:scale-105 transition-transform duration-700"
+                    />
+                  )}
                 </div>
               </div>
             </div>

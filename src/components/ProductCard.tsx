@@ -9,6 +9,7 @@ import { useWishlist } from "@/context/WishlistContext";
 
 export interface Product {
   id: string;
+  slug?: string;
   name: string;
   price: string;
   image?: string;
@@ -39,8 +40,8 @@ export function ProductCard({
 }: ProductCardProps) {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
-  const mainImage = product.image || product.img || "/favior_shaker_white.png";
-  const gallery = product.gallery && product.gallery.length > 0 ? product.gallery : [mainImage];
+  const mainImage = product.image || product.img || "";
+  const gallery = product.gallery && product.gallery.length > 0 ? product.gallery : (mainImage ? [mainImage] : []);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const isWishlisted = isInWishlist(product.id);
   const [added, setAdded] = useState(false);
@@ -118,25 +119,26 @@ export function ProductCard({
   };
 
   const slugMap: Record<string, string> = {
-    p1: "the-havane",
-    p2: "the-aube",
-    p3: "the-lumen",
-    p4: "the-brume",
-    c1: "pro-stainless-shaker",
-    c2: "elite-wrist-wraps",
-    c3: "performance-gym-kit",
-    c4: "resistance-band-set",
-    c5: "the-aube",
-    c6: "the-havane",
+    p1: "favior-heritage-gym-duffle-bag",
+    p2: "favior-pro-series-shaker-stealth-black",
+    p3: "favior-pro-series-shaker-700ml-desert-nude",
+    p4: "favior-luxury-gym-towel",
+    c1: "favior-pro-series-shaker-stealth-black",
+    c2: "favior-heavy-duty-wrist-wraps",
+    c3: "favior-pro-series-shaker-700ml-desert-nude",
+    c4: "favior-resistance-loop-bands-5-pack",
+    c5: "favior-pro-series-shaker-stealth-black",
+    c6: "favior-heritage-gym-duffle-bag",
   };
 
   const productHref =
     product.href ||
+    (product.slug ? `/products/${product.slug}` : undefined) ||
     (slugMap[product.id]
       ? `/products/${slugMap[product.id]}`
       : product.id
       ? `/products/${product.id}`
-      : "/products/heritage-oval");
+      : "/products/favior-pro-series-shaker-stealth-black");
 
   return (
     <article className="group relative flex w-full min-w-0 flex-col cursor-pointer select-none transition-all duration-300">
@@ -147,13 +149,19 @@ export function ProductCard({
         onTouchEnd={handleTouchEnd}
       >
         <Link href={productHref} className="absolute inset-0 z-0 cursor-pointer">
-          <Image
-            src={activeImage}
-            alt={product.alt || product.name}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-          />
+          {activeImage ? (
+            <Image
+              src={activeImage}
+              alt={product.alt || product.name}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              className="object-contain p-2 sm:p-2.5 transition-transform duration-500 ease-out group-hover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-neutral-50 text-neutral-400 text-xs uppercase font-medium">
+              No Image
+            </div>
+          )}
         </Link>
 
         {/* Circular Wishlist Button matching Reference Image 2 Top-Right placement */}
@@ -191,24 +199,6 @@ export function ProductCard({
             </button>
           </>
         )}
-
-        {/* Slide-Up Quick View Button — hidden on mobile, hover-reveal on desktop */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            if (onQuickView) onQuickView(product);
-          }}
-          className="absolute bottom-3 left-1/2 z-20 hidden sm:flex -translate-x-1/2 items-center justify-center rounded-full bg-black/80 text-[8px] font-semibold tracking-widest text-white shadow-md uppercase leading-none
-            sm:bottom-5 sm:translate-y-2 sm:bg-black sm:text-[9px] sm:opacity-0 sm:shadow-lg sm:transition-all sm:duration-300 sm:ease-out sm:group-hover:opacity-100 sm:group-hover:translate-y-0 sm:hover:bg-neutral-800"
-          style={{
-            padding: "7px 14px",
-            lineHeight: 1,
-          }}
-        >
-          Quick View
-        </button>
 
         {/* Clean Subtle Dots */}
         {hasGalleryControls && (

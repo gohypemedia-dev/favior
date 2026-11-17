@@ -6,19 +6,70 @@ import type { ProductDetail } from "./productData";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 
-export function ProductSummary({ product }: { product: ProductDetail }) {
+interface ProductSummaryProps {
+  product: ProductDetail;
+  selectedColor?: string;
+  onColorChange?: (color: string) => void;
+  activeGallery?: { src: string; alt?: string }[];
+}
+
+export function ProductSummary({
+  product,
+  selectedColor: controlledSelectedColor,
+  onColorChange,
+  activeGallery,
+}: ProductSummaryProps) {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
-  const [selectedColor, setSelectedColor] = useState(
+
+  const isShaker =
+    (product.slug && product.slug.toLowerCase().includes("shaker")) ||
+    (product.title && product.title.toLowerCase().includes("shaker"));
+
+  const [internalColor, setInternalColor] = useState(
     product.colors && product.colors.length > 0 ? product.colors[0].name : product.colorName
   );
+
+  const selectedColor = controlledSelectedColor ?? internalColor;
+
+  const handleSelectColor = (colorName: string) => {
+    setInternalColor(colorName);
+    onColorChange?.(colorName);
+  };
+
+  const isNude =
+    isShaker &&
+    (selectedColor.toLowerCase().includes("nude") ||
+      selectedColor.toLowerCase().includes("desert") ||
+      selectedColor.toLowerCase().includes("dune"));
+
+  const displayedTitle = isShaker
+    ? isNude
+      ? "Favior Dune Shaker (700ml)"
+      : "Favior Phantom Shaker (700ml)"
+    : product.title;
+
+  const currentImageSrc =
+    (activeGallery && activeGallery[0]?.src) ||
+    (isShaker
+      ? isNude
+        ? "/favior_pro_shaker_nude.jpg"
+        : "/favior_pro_shaker_black.jpg"
+      : (product.gallery && product.gallery[0] ? product.gallery[0].src : ""));
+
+  const activeSlug = isShaker
+    ? isNude
+      ? "favior-pro-series-shaker-700ml-desert-nude"
+      : "favior-pro-series-shaker-stealth-black"
+    : product.slug;
+
   const [selectedSize, setSelectedSize] = useState(
     product.sizes && product.sizes.length > 0 ? product.sizes[0] : "Standard"
   );
   const [reviewsCount, setReviewsCount] = useState(128);
   const [averageRating, setAverageRating] = useState(Number(product.rating) || 4.8);
   const [cartState, setCartState] = useState<"idle" | "adding" | "added">("idle");
-  const isWishlisted = isInWishlist(product.id || product.slug);
+  const isWishlisted = isInWishlist(isShaker ? activeSlug : (product.id || product.slug));
   const [isDescExpanded, setIsDescExpanded] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState<"care" | "shipping" | null>(null);
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
@@ -48,12 +99,12 @@ export function ProductSummary({ product }: { product: ProductDetail }) {
 
   const handleAddToCart = () => {
     addToCart({
-      id: product.id || product.slug,
-      slug: product.slug,
-      name: product.title,
+      id: isShaker ? activeSlug : (product.id || product.slug),
+      slug: activeSlug,
+      name: displayedTitle,
       price: product.price,
       originalPrice: product.originalPrice,
-      image: product.gallery && product.gallery[0] ? product.gallery[0].src : "/favior_shaker_white.png",
+      image: currentImageSrc,
       color: selectedColor,
       size: selectedSize,
     });
@@ -61,6 +112,20 @@ export function ProductSummary({ product }: { product: ProductDetail }) {
     setTimeout(() => {
       setCartState("idle");
     }, 2000);
+  };
+
+  const handleBuyNow = () => {
+    addToCart({
+      id: isShaker ? activeSlug : (product.id || product.slug),
+      slug: activeSlug,
+      name: displayedTitle,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image: currentImageSrc,
+      color: selectedColor,
+      size: selectedSize,
+    });
+    window.location.href = "/checkout";
   };
 
   const handleApplyCoupon = (code: string) => {
@@ -150,7 +215,7 @@ export function ProductSummary({ product }: { product: ProductDetail }) {
               margin: 0,
             }}
           >
-            {product.title}
+            {displayedTitle}
           </h1>
         </div>
 
@@ -293,18 +358,18 @@ export function ProductSummary({ product }: { product: ProductDetail }) {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               {product.colors.map((color) => {
-                const isSelected = selectedColor === color.name;
+                const isSelected = selectedColor.toLowerCase() === color.name.toLowerCase();
                 return (
                   <button
                     key={color.name}
                     type="button"
                     title={color.name}
-                    onClick={() => setSelectedColor(color.name)}
+                    onClick={() => handleSelectColor(color.name)}
                     style={{
-                      width: "28px",
-                      height: "28px",
+                      width: "32px",
+                      height: "32px",
                       borderRadius: "999px",
-                      border: isSelected ? "1.5px solid #111111" : "1px solid rgba(0,0,0,0.15)",
+                      border: isSelected ? "2px solid #111111" : "1px solid rgba(0,0,0,0.2)",
                       padding: "2px",
                       background: "transparent",
                       cursor: "pointer",
@@ -321,7 +386,7 @@ export function ProductSummary({ product }: { product: ProductDetail }) {
                         borderRadius: "999px",
                         backgroundColor: color.value,
                         display: "block",
-                        border: "1px solid rgba(0,0,0,0.08)",
+                        border: "1px solid rgba(0,0,0,0.12)",
                       }}
                     />
                   </button>
@@ -603,17 +668,17 @@ export function ProductSummary({ product }: { product: ProductDetail }) {
                 const nextState = !isWishlisted;
                 if (nextState) {
                   addToWishlist({
-                    id: product.id || product.slug,
-                    slug: product.slug,
-                    name: product.title,
+                    id: isShaker ? activeSlug : (product.id || product.slug),
+                    slug: activeSlug,
+                    name: displayedTitle,
                     price: product.price,
                     originalPrice: product.originalPrice,
-                    image: product.gallery && product.gallery[0] ? product.gallery[0].src : "/favior_shaker_white.png",
+                    image: currentImageSrc,
                     color: selectedColor,
                     size: selectedSize,
                   });
                 } else {
-                  removeFromWishlist(product.id || product.slug);
+                  removeFromWishlist(isShaker ? activeSlug : (product.id || product.slug));
                 }
               }}
               title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
@@ -644,7 +709,7 @@ export function ProductSummary({ product }: { product: ProductDetail }) {
         {/* BUY IT NOW Direct Purchase Button */}
         <button
           type="button"
-          onClick={handleAddToCart}
+          onClick={handleBuyNow}
           style={{
             width: "100%",
             height: "48px",

@@ -140,7 +140,7 @@ export function CollectionPage({
       name: product.name,
       price: product.price,
       originalPrice: product.originalPrice,
-      image: product.image || product.img || "/favior_shaker_white.png",
+      image: product.image || product.img || "",
       slug: product.id,
     });
   };

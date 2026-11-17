@@ -47,6 +47,18 @@ function AuthForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [bgImage, setBgImage] = useState<string>("");
+
+  useEffect(() => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          setBgImage(json.data[0].mainImage);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,15 +124,17 @@ function AuthForm() {
       <div className="grid grid-cols-1 lg:grid-cols-2" style={{ width: "100%", minHeight: "calc(100vh - 70px)" }}>
         
         {/* Left Side: Editorial Lifestyle Photo */}
-        <div style={{ position: "relative", backgroundColor: "#f1f5f9", minHeight: "100%", overflow: "hidden" }} className="hidden lg:block">
-          <Image
-            src="/product_showcase_mosaic.png"
-            alt="Favior Gym Gear Products"
-            fill
-            priority
-            unoptimized
-            style={{ objectFit: "cover", objectPosition: "center" }}
-          />
+        <div style={{ position: "relative", backgroundColor: "#f8f9fa", minHeight: "100%", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }} className="hidden lg:flex">
+          {bgImage && (
+            <Image
+              src={bgImage}
+              alt="Favior Athletic Gear"
+              fill
+              priority
+              unoptimized
+              style={{ objectFit: "contain", padding: "48px" }}
+            />
+          )}
         </div>
 
         {/* Right Side: Editorial Form */}

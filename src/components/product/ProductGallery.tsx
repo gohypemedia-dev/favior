@@ -80,7 +80,7 @@ export function ProductGallery({ images }: { images: ProductImage[] }) {
                 alt={`View thumbnail ${index + 1}`}
                 fill
                 sizes="76px"
-                className="object-cover"
+                className="object-contain p-1"
               />
             </button>
           );
@@ -95,7 +95,7 @@ export function ProductGallery({ images }: { images: ProductImage[] }) {
           fill
           priority
           sizes="(max-width: 1024px) 100vw, 55vw"
-          className="object-cover transition-transform duration-500 ease-out hover:scale-[1.02]"
+          className="object-contain p-4 transition-transform duration-500 ease-out hover:scale-[1.02]"
         />
       </figure>
 
@@ -124,7 +124,7 @@ export function ProductGallery({ images }: { images: ProductImage[] }) {
                   fill
                   priority={index === 0}
                   sizes="100vw"
-                  className="object-cover"
+                  className="object-contain p-2"
                 />
               </div>
             ))}
@@ -174,7 +174,7 @@ export function ProductGallery({ images }: { images: ProductImage[] }) {
                     alt={`Thumbnail ${index + 1}`}
                     fill
                     sizes="120px"
-                    className="object-cover"
+                    className="object-contain p-1"
                   />
                 </button>
               );

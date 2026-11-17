@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import type { CollectionDetail, CollectionCategoryKey } from "@/types/collection";
 
 interface CollectionHeaderProps {
@@ -45,36 +44,6 @@ export function CollectionHeader({
           boxSizing: "border-box",
         }}
       >
-        {/* Centered Breadcrumb Navigation */}
-        <nav
-          aria-label="Breadcrumb"
-          style={{
-            marginBottom: "8px",
-          }}
-        >
-          <div className="flex flex-wrap items-center justify-center gap-[6px] text-[9.5px] sm:text-[11px] uppercase tracking-[0.22em] text-[#767676] font-medium">
-            {collection.breadcrumb.map((crumb, idx) => {
-              const isLast = idx === collection.breadcrumb.length - 1;
-              return (
-                <div key={idx} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  {crumb.href && !isLast ? (
-                    <Link
-                      href={crumb.href}
-                      style={{ color: "#767676", textDecoration: "none" }}
-                    >
-                      {crumb.label}
-                    </Link>
-                  ) : (
-                    <span style={{ color: isLast ? "#111111" : "#767676", fontWeight: isLast ? 600 : 500 }}>
-                      {crumb.label}
-                    </span>
-                  )}
-                  {!isLast && <span style={{ color: "#cccccc", margin: "0 4px" }}>/</span>}
-                </div>
-              );
-            })}
-          </div>
-        </nav>
 
         {/* Hero Title */}
         <h1

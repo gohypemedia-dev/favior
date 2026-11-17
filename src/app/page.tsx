@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import ProductCard, { Product } from "@/components/ProductCard";
 import ProductSlider from "@/components/ProductSlider";
 import CardGridSection from "@/components/CardGridSection";
@@ -87,7 +88,6 @@ const ArrowRightIcon = () => (
 export default async function Home() {
   const [dbProducts, activeBanners] = await Promise.all([
     db.product.findMany({
-      take: 12,
       orderBy: { createdAt: "desc" }
     }),
     listActiveBanners()
@@ -95,18 +95,53 @@ export default async function Home() {
 
   const allProducts: Product[] = dbProducts.map((p: any) => ({
     id: p.id,
+    slug: p.slug,
     name: p.name,
     desc: p.description,
-    price: `RS. ${p.price}`,
-    originalPrice: p.oldPrice ? `RS. ${p.oldPrice}` : undefined,
+    price: p.price?.toString().startsWith("₹")
+      ? `RS. ${p.price.replace(/^₹/, "")}`
+      : p.price?.toString().startsWith("RS.")
+      ? p.price
+      : `RS. ${p.price}`,
+    originalPrice: p.oldPrice
+      ? p.oldPrice.toString().startsWith("₹")
+        ? `RS. ${p.oldPrice.replace(/^₹/, "")}`
+        : p.oldPrice.toString().startsWith("RS.")
+        ? p.oldPrice
+        : `RS. ${p.oldPrice}`
+      : undefined,
     rating: p.rating,
     reviews: parseInt(p.reviewsCount, 10) || 0,
     img: p.mainImage,
     gallery: [p.mainImage]
   }));
 
-  const products = allProducts.slice(0, 4);
+  const duffle = allProducts.find((p) => p.slug === "favior-heritage-gym-duffle-bag");
+  const phantomShaker = allProducts.find((p) => p.slug === "favior-pro-series-shaker-stealth-black");
+  const comboKit = allProducts.find((p) => p.slug === "favior-complete-gym-kit");
+  const towel = allProducts.find((p) => p.slug === "favior-luxury-gym-towel");
+
+  const bestsellersList = [
+    duffle,
+    phantomShaker,
+    comboKit,
+    towel,
+  ].filter(Boolean) as Product[];
+
+  const products = bestsellersList.length === 4
+    ? bestsellersList
+    : allProducts.filter((p) => p.slug !== "favior-pro-series-shaker-700ml-desert-nude").slice(0, 4);
+
   const curateItems = allProducts.slice(4, 8);
+
+  // DB-driven images for split sections — find by slug
+  const duffleProduct = dbProducts.find((p: any) => p.slug === "favior-heritage-gym-duffle-bag");
+  const shakerProduct = dbProducts.find((p: any) => p.slug === "favior-pro-series-shaker-stealth-black");
+  const duffleImg: string = duffleProduct?.mainImage ?? "";
+  const shakerImg: string = shakerProduct?.mainImage ?? "";
+
+  // Build Your Kit — 4 newest product images from DB
+  const kitImages = dbProducts.slice(0, 4).map((p: any) => ({ img: p.mainImage as string, name: p.name as string, slug: p.slug as string }));
 
   return (
     <>
@@ -127,7 +162,6 @@ export default async function Home() {
       {/* ── Featured Products Grid ── */}
       <CardGridSection
         title="Bestsellers"
-        subtitle="Curated Selection"
         products={products.slice(0, 4)}
         viewAllHref="/all-products"
       />
@@ -137,107 +171,145 @@ export default async function Home() {
 
 
 
-      {/* ── Split: Shaker / Text ── */}
+      {/* ── Split: Favior Duffle Bag / Text ── */}
+      {duffleImg && (
       <section className="split-section">
-        <Image
-          src="/og_shaker.png"
-          alt="Favior Pro Stainless Shaker"
-          width={800}
-          height={600}
-          className="split-img"
-        />
+        <div
+          style={{
+            backgroundColor: "#ffffff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            height: "100%",
+            minHeight: "480px",
+            padding: "36px",
+          }}
+        >
+          <Image
+            src={duffleImg}
+            alt="Favior Heritage Gym Duffle Bag"
+            width={800}
+            height={600}
+            style={{
+              width: "100%",
+              height: "100%",
+              maxHeight: "480px",
+              objectFit: "contain",
+            }}
+          />
+        </div>
         <div className="split-content dark">
-          <p className="split-eyebrow">Hydration Series</p>
-          <h2 className="serif">Never miss a rep. Never miss a sip.</h2>
+          <h2 className="serif">Built for the gym. Crafted for travel</h2>
           <p>
-            Our Pro Stainless Shakers are built with double-wall insulation to
-            keep your pre-workout ice cold and your protein shake perfectly
-            blended — from the first set to the final rep.
+            The Favior Heritage Gym Duffle Bag delivers 35L of premium capacity.
+            Constructed with heavy-duty water-resistant ballistic canvas, full-grain
+            leather accents, brushed antique brass hardware, and a dedicated
+            ventilated shoe compartment.
           </p>
-          <a href="/shakers" className="btn btn-light" style={{ alignSelf: "flex-start" }}>
+          <a href="/all-products" className="btn btn-light" style={{ alignSelf: "flex-start" }}>
+            Shop Duffle Bag
+          </a>
+        </div>
+      </section>
+      )}
+
+      {/* ── Split: Shaker Text (Left) / Favior Shaker (Right) ── */}
+      {shakerImg && (
+      <section className="split-section">
+        <div className="split-content" style={{ background: "var(--bg-cream)" }}>
+          <h2 className="serif" style={{ color: "var(--text-dark)" }}>
+            Never miss a rep. <em>Never miss a sip</em>
+          </h2>
+          <p>
+            Crafted from shatterproof, BPA-free smoke Tritan with an integrated
+            cyclone turbine mixing wheel. The Favior Pro Series Shaker delivers
+            instantaneous, silky-smooth blending with a 100% leak-proof snap lock.
+          </p>
+          <a href="/shakers" className="btn btn-dark" style={{ alignSelf: "flex-start" }}>
             Shop Shakers
           </a>
         </div>
+        <div
+          style={{
+            backgroundColor: "#ffffff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            height: "100%",
+            minHeight: "480px",
+            padding: "36px",
+          }}
+        >
+          <Image
+            src={shakerImg}
+            alt="Favior Phantom Shaker Bottle"
+            width={800}
+            height={600}
+            style={{
+              width: "100%",
+              height: "100%",
+              maxHeight: "480px",
+              objectFit: "contain",
+            }}
+          />
+        </div>
       </section>
+      )}
 
-      {/* ── Split: Wristband / Text ── */}
-      <section className="split-section">
-        <div className="split-content" style={{ background: "var(--bg-cream)" }}>
-          <p className="split-eyebrow">Support Series</p>
-          <h2 className="serif" style={{ color: "var(--text-dark)" }}>
-            Protect your joints. <em>Maximise</em> your lifts.
-          </h2>
-          <p>
-            Our Elite Wrist Wraps deliver competition-grade joint support for
-            every pressing movement. Crafted from heavy-duty cotton-elastic
-            blend with a secure thumb loop for perfect, repeatable placement.
-          </p>
-          <a href="/wristbands" className="btn btn-dark" style={{ alignSelf: "flex-start" }}>
-            Shop Wrist Wraps
-          </a>
-        </div>
-        <Image
-          src="/og_wristband.png"
-          alt="Elite Wrist Wraps"
-          width={800}
-          height={600}
-          className="split-img"
-        />
-      </section>
-
-      {/* ── Curate / Build Your Kit ── */}
-      <CardGridSection
-        title="Build Your Kit"
-        subtitle="Exclusive Performance Bundles"
-        products={curateItems.slice(0, 4)}
-        viewAllHref="/all-products"
-      />
-
-
-
-      {/* ── Journal Section Marquee Banner ── */}
-      <div className="w-full bg-black py-14 sm:py-16 flex items-center overflow-hidden select-none border-y border-zinc-800">
-        <div className="animate-marquee-left flex gap-10 whitespace-nowrap text-xs sm:text-xs font-bold uppercase tracking-[0.3em] text-white py-1 leading-relaxed">
-          <span>ATHLETE STORIES &nbsp;•&nbsp; TRAINING SCIENCE &nbsp;•&nbsp; RECOVERY STRATEGIES &nbsp;•&nbsp; NUTRITION GUIDES &nbsp;•&nbsp; FAVIOR JOURNAL &nbsp;•&nbsp;</span>
-          <span>ATHLETE STORIES &nbsp;•&nbsp; TRAINING SCIENCE &nbsp;•&nbsp; RECOVERY STRATEGIES &nbsp;•&nbsp; NUTRITION GUIDES &nbsp;•&nbsp; FAVIOR JOURNAL &nbsp;•&nbsp;</span>
-          <span>ATHLETE STORIES &nbsp;•&nbsp; TRAINING SCIENCE &nbsp;•&nbsp; RECOVERY STRATEGIES &nbsp;•&nbsp; NUTRITION GUIDES &nbsp;•&nbsp; FAVIOR JOURNAL &nbsp;•&nbsp;</span>
-          <span>ATHLETE STORIES &nbsp;•&nbsp; TRAINING SCIENCE &nbsp;•&nbsp; RECOVERY STRATEGIES &nbsp;•&nbsp; NUTRITION GUIDES &nbsp;•&nbsp; FAVIOR JOURNAL &nbsp;•&nbsp;</span>
-        </div>
-      </div>
-
-      {/* ── Camera / Editorial Pair ── */}
-      <section className="section camera-section">
-        <div className="container" style={{ marginBottom: "28px" }}>
-          <p className="uppercase tracking-[0.22em] font-semibold text-zinc-500 text-[11px] mb-1">
-            INSIGHTS & STORIES
-          </p>
-          <h2 className="text-[28px] sm:text-[34px] font-bold uppercase tracking-tight text-zinc-900 leading-none">
-            JOURNAL
+      {/* ── Build Your Kit: DB Product Grid Banner ── */}
+      {kitImages.length > 0 && (
+      <section
+        className="w-full overflow-hidden bg-white"
+        style={{
+          paddingTop: "40px",
+          paddingBottom: "48px",
+          borderTop: "1px solid #e5e5e5",
+          borderBottom: "1px solid #e5e5e5",
+        }}
+      >
+        {/* Section Header */}
+        <div
+          style={{
+            maxWidth: "1320px",
+            margin: "0 auto",
+            paddingLeft: "24px",
+            paddingRight: "24px",
+            marginBottom: "24px",
+          }}
+        >
+          <h2
+            className="font-heading font-bold uppercase tracking-tight"
+            style={{ fontSize: "28px", lineHeight: "1.1", color: "#111111" }}
+          >
+            Build Your Kit
           </h2>
         </div>
-        <div className="camera-grid" style={{ maxWidth: 1280, margin: "0 auto" }}>
-          <div className="camera-content">
-            <p className="eyebrow">Latest from the Journal</p>
-            <h2 className="serif">Train Hard. Recover Smart.</h2>
-            <p>
-              Our journal dives into training science, recovery strategies, and
-              athlete stories — everything you need to fuel your next PR.
-            </p>
-            <a href="/journal" className="btn btn-dark" style={{ alignSelf: "flex-start" }}>
-              Read the Journal
-            </a>
-          </div>
-          <div className="camera-img-wrap">
+
+        {/* End-to-End High-Impact Combo Pack Banner */}
+        <Link
+          href="/all-products"
+          className="group relative block w-full bg-white transition-opacity hover:opacity-95"
+          style={{ width: "100%" }}
+        >
+          <div className="relative w-full aspect-[16/7.5] sm:aspect-[2400/1100] min-h-[380px] sm:min-h-[480px] md:min-h-[560px] lg:min-h-[640px] bg-white flex items-center justify-center">
             <Image
-              src="/og_shaker.png"
-              alt="Fitness journal editorial"
-              width={800}
-              height={600}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              src="/favior_combo_pack_banner.jpg"
+              alt="Favior Complete Athlete Combo Pack Kit"
+              fill
+              priority
+              sizes="100vw"
+              className="object-contain w-full h-full transition-transform duration-700 ease-out group-hover:scale-[1.01]"
             />
           </div>
-        </div>
+        </Link>
       </section>
+      )}
+
+
+
+
 
 
       {/* ── FAQ Section ── */}

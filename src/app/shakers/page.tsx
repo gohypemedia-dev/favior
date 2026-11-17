@@ -17,8 +17,39 @@ export const metadata: Metadata = {
 };
 
 export default async function ShakersPage() {
-  const dbProducts = await db.product.findMany({ orderBy: { createdAt: "desc" } });
-  const products: CatalogItem[] = dbProducts.map((p: any) => ({ id: p.id, name: p.name, desc: p.description, price: `RS. ${p.price}`, originalPrice: p.oldPrice ? `RS. ${p.oldPrice}` : undefined, numericPrice: parseFloat(p.price.replace(/,/g, "")), rating: p.rating, reviews: parseInt(p.reviewsCount, 10) || 0, img: p.mainImage, gallery: [p.mainImage], category: "shakers", inStock: p.quantity > 0 }));
+  const dbProducts = await db.product.findMany({
+    where: {
+      OR: [
+        { slug: { contains: "shaker" } },
+        { name: { contains: "shaker", mode: "insensitive" } },
+      ],
+    },
+    include: { colors: true },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const products: CatalogItem[] = dbProducts.map((p: any) => {
+    const isNude = p.slug?.includes("nude") || p.name?.toLowerCase().includes("nude") || p.name?.toLowerCase().includes("dune");
+    return {
+      id: p.id,
+      slug: p.slug,
+      name: p.name,
+      desc: p.description,
+      price: `RS. ${p.price}`,
+      originalPrice: p.oldPrice ? `RS. ${p.oldPrice}` : undefined,
+      numericPrice: parseFloat(p.price.replace(/,/g, "")),
+      rating: p.rating,
+      reviews: parseInt(p.reviewsCount, 10) || 0,
+      img: p.mainImage,
+      gallery: isNude
+        ? ["/favior_pro_shaker_nude.jpg", "/favior_pro_shaker_black.jpg"]
+        : ["/favior_pro_shaker_black.jpg", "/favior_pro_shaker_nude.jpg"],
+      category: "shakers",
+      inStock: p.quantity > 0,
+      colorName: isNude ? "Desert Nude" : "Stealth Black",
+      swatches: isNude ? ["#D2B48C", "#111111"] : ["#111111", "#D2B48C"],
+    };
+  });
 
   return (
     <div className="min-h-screen flex flex-col bg-white">

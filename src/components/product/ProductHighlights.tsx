@@ -6,18 +6,18 @@ import type { HighlightBlock } from "@/types/product";
 
 const DEFAULT_HIGHLIGHTS: HighlightBlock[] = [
   {
-    title: "Precision Bio-Acetate & Steel",
+    title: "Precision Food-Grade Steel",
     description:
-      "Meticulously sculpted from organically sourced bio-acetate and aerospace 18/8 stainless steel. Undergoes multi-stage vibration tumbling and precision polishing for exceptional tensile strength and lasting scratch resistance.",
-    imageSrc: "/favior_shaker_white.png",
-    imageAlt: "Precision bio-acetate and stainless steel detail view",
+      "Meticulously sculpted from aerospace-grade 18/8 stainless steel. Undergoes multi-stage vibration tumbling and precision polishing for exceptional tensile strength and lasting scratch resistance.",
+    imageSrc: "/favior_pro_shaker_black.jpg",
+    imageAlt: "Precision stainless steel detail view",
   },
   {
-    title: "Signature 5-Barrel Hinges",
+    title: "High-Density Ballistic Canvas",
     description:
-      "Reinforced custom metal hinges and wire temple cores provide structural longevity. Engineered to distribute weight evenly and balance the fit, ensuring the frames rest comfortably on your nose bridge without sliding.",
-    imageSrc: "/favior_wristwrap_white.png",
-    imageAlt: "Signature custom hinges and structural engineering",
+      "Reinforced heavy-duty water-resistant construction designed for rugged daily gym use. Engineered to distribute weight evenly with reinforced stress points and antique brass hardware.",
+    imageSrc: "/favior_heritage_duffle_bag.jpg",
+    imageAlt: "High-density ballistic canvas and structural engineering",
   },
 ];
 
@@ -59,18 +59,6 @@ export function ProductHighlights({
       >
         {/* Section Header */}
         <div style={{ textAlign: "center", marginBottom: "72px" }}>
-          <p
-            style={{
-              fontSize: "11px",
-              fontWeight: "600",
-              textTransform: "uppercase",
-              letterSpacing: "0.24em",
-              color: "rgba(255, 255, 255, 0.6)",
-              margin: "0 0 10px 0",
-            }}
-          >
-            CRAFTSMANSHIP &amp; FIT
-          </p>
           <h2
             style={{
               fontSize: "26px",
@@ -78,21 +66,12 @@ export function ProductHighlights({
               textTransform: "uppercase",
               letterSpacing: "0.12em",
               color: "#FFFFFF",
-              margin: "0 0 16px 0",
+              margin: "0",
               lineHeight: "1.2",
             }}
           >
             PRODUCT HIGHLIGHTS
           </h2>
-          {/* Accent Dash Under Section Header */}
-          <div
-            style={{
-              width: "44px",
-              height: "1.5px",
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              margin: "0 auto",
-            }}
-          />
         </div>
 
         {/* Alternating Highlights Rows */}
@@ -119,9 +98,9 @@ export function ProductHighlights({
                     width: "100%",
                     aspectRatio: "1 / 1",
                     overflow: "hidden",
-                    backgroundColor: "#111111",
+                    backgroundColor: "#ffffff",
                     border: "1px solid rgba(255, 255, 255, 0.08)",
-                    borderRadius: "0px",
+                    borderRadius: "8px",
                   }}
                   className="highlight-image-box"
                 >
@@ -131,8 +110,8 @@ export function ProductHighlights({
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"
                     style={{
-                      objectFit: "cover",
-                      objectPosition: block.imagePosition || "center",
+                      objectFit: "contain",
+                      padding: "24px",
                       transition: "transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)",
                     }}
                     className="hover:scale-105"

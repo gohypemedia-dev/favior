@@ -55,18 +55,6 @@ export function CardGridSection({
           style={{ marginBottom: "24px" }}
         >
           <div className="flex flex-col items-center sm:items-start">
-            {subtitle && (
-              <p
-                className="uppercase tracking-[0.22em] font-semibold"
-                style={{
-                  fontSize: "11px",
-                  color: "#71717a",
-                  marginBottom: "4px",
-                }}
-              >
-                {subtitle}
-              </p>
-            )}
             <h2
               className="font-heading font-bold uppercase tracking-tight"
               style={{

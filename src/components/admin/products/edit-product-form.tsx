@@ -332,7 +332,7 @@ export function EditProductForm({ product, categories }: { product: EditableProd
                       : "border-black/10 hover:border-black/30"
                   }`}
                 >
-                  <Image src={media.url || "/category-smartphone.png"} alt={`${title} image ${index + 1}`} fill style={{"objectFit":"contain","padding":"0.25rem"}} />
+                  {media.url && <Image src={media.url} alt={`${title} image ${index + 1}`} fill style={{"objectFit":"contain","padding":"0.25rem"}} />}
                   {index === 0 ? <span style={{"position":"absolute","bottom":"0.25rem","left":"0.25rem","borderRadius":"0.25rem","backgroundColor":"rgb(0,0,0,0.7)","paddingLeft":"0.375rem","paddingRight":"0.375rem","paddingTop":"0.125rem","paddingBottom":"0.125rem","fontSize":"10px","fontWeight":"500","color":"rgb(255,255,255)"}}>Primary</span> : null}
                   <div style={{"position":"absolute","right":"0.25rem","top":"0.25rem","display":"flex","alignItems":"center","borderRadius":"0.375rem","borderWidth":"1px","borderColor":"rgb(0,0,0,0.1)","backgroundColor":"rgb(255,255,255,0.95)","padding":"0.125rem","boxShadow":"0 0 #0000, 0 0 #0000, 0 1px 2px 0 rgb(0,0,0,0.05)"}}>
                     <GripVertical aria-hidden="true" className="size-3.5 text-black/45" />

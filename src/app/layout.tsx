@@ -6,6 +6,7 @@ import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { SideCartDrawer } from "@/components/cart/SideCartDrawer";
 import { SideWishlistDrawer } from "@/components/wishlist/SideWishlistDrawer";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const montserrat = Montserrat({
   variable: "--font-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({
             <SmoothScrollProvider>{children}</SmoothScrollProvider>
             <SideCartDrawer />
             <SideWishlistDrawer />
+            <ScrollToTop />
           </CartProvider>
         </WishlistProvider>
       </body>
