@@ -18,7 +18,8 @@ async function fetchDbProduct(slug: string) {
   const legacyMap: Record<string, string> = {
     "the-havane": "favior-heritage-gym-duffle-bag",
     "the-aube": "favior-pro-series-shaker-stealth-black",
-    "the-lumen": "favior-pro-series-shaker-700ml-desert-nude",
+    "the-lumen": "favior-pro-series-shaker-stealth-black",
+    "favior-pro-series-shaker-700ml-desert-nude": "favior-pro-series-shaker-stealth-black",
     "the-brume": "favior-luxury-gym-towel",
   };
   const targetSlug = legacyMap[slug] || slug;

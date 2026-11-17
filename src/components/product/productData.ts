@@ -87,12 +87,12 @@ export const trendingProducts: ProductCard[] = [
   },
   {
     id: "product-3",
-    image: "/favior_pro_shaker_nude.jpg",
-    alt: "Favior Dune Shaker Bottle",
-    badge: "NEW ARRIVAL",
-    swatches: ["#d2b48c"],
+    image: "/favior_complete_gym_kit.jpg",
+    alt: "Favior Complete Gym Kit",
+    badge: "COMBO PACK",
+    swatches: ["#111111"],
     gallery: [
-      "/favior_pro_shaker_nude.jpg",
+      "/favior_complete_gym_kit.jpg",
     ],
   },
   {
@@ -147,7 +147,7 @@ export const featuredProduct: ProductDetail = {
   gallery: [
     { src: "/favior_heritage_duffle_bag.jpg", alt: "Favior Heritage Gym Duffle Bag", objectPosition: "center" },
     { src: "/favior_pro_shaker_black.jpg", alt: "Favior Phantom Shaker", objectPosition: "center" },
-    { src: "/favior_pro_shaker_nude.jpg", alt: "Favior Dune Shaker", objectPosition: "center" },
+    { src: "/favior_complete_gym_kit.jpg", alt: "Favior Complete Gym Kit", objectPosition: "center" },
     { src: "/favior_luxury_towel.jpg", alt: "Favior Luxury Gym Towel", objectPosition: "center" },
   ],
   deliveryPerks: [

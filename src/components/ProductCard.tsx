@@ -121,11 +121,11 @@ export function ProductCard({
   const slugMap: Record<string, string> = {
     p1: "favior-heritage-gym-duffle-bag",
     p2: "favior-pro-series-shaker-stealth-black",
-    p3: "favior-pro-series-shaker-700ml-desert-nude",
+    p3: "favior-complete-gym-kit",
     p4: "favior-luxury-gym-towel",
     c1: "favior-pro-series-shaker-stealth-black",
     c2: "favior-heavy-duty-wrist-wraps",
-    c3: "favior-pro-series-shaker-700ml-desert-nude",
+    c3: "favior-complete-gym-kit",
     c4: "favior-resistance-loop-bands-5-pack",
     c5: "favior-pro-series-shaker-stealth-black",
     c6: "favior-heritage-gym-duffle-bag",

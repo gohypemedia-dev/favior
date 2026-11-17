@@ -86,7 +86,7 @@ export const productsCatalog: Record<string, ProductDetailItem> = {
       { label: "Level", value: "Professional Heavy Duty" },
     ],
     shippingNotice: "Free 2-day shipping on orders above RS. 5,000",
-    mainImage: "/favior_pro_shaker_nude.jpg",
+    mainImage: "/favior_complete_gym_kit.jpg",
   },
   "favior-resistance-bands": {
     id: "favior-resistance-bands",

@@ -114,10 +114,8 @@ export function QuickViewModal({
     : product.name;
 
   const activeSlug = isShaker
-    ? isNudeSelected
-      ? "favior-pro-series-shaker-700ml-desert-nude"
-      : "favior-pro-series-shaker-stealth-black"
-    : product.id;
+    ? "favior-pro-series-shaker-stealth-black"
+    : product.slug || product.id;
 
   const defaultImg = isShaker
     ? isNudeSelected
@@ -138,13 +136,15 @@ export function QuickViewModal({
   const activeImgSrc = gallery[activeImageIndex] || defaultImg;
 
   const productUrl = isShaker
-    ? `/products/${activeSlug}`
+    ? `/products/favior-pro-series-shaker-stealth-black`
+    : product.slug
+    ? `/products/${product.slug}`
     : product.id === "p1"
     ? "/products/favior-heritage-gym-duffle-bag"
     : product.id === "p2"
     ? "/products/favior-pro-series-shaker-stealth-black"
     : product.id === "p3"
-    ? "/products/favior-pro-series-shaker-700ml-desert-nude"
+    ? "/products/favior-complete-gym-kit"
     : product.id === "p4"
     ? "/products/favior-luxury-gym-towel"
     : `/products/${product.id}`;

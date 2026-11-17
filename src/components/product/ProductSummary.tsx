@@ -58,9 +58,7 @@ export function ProductSummary({
       : (product.gallery && product.gallery[0] ? product.gallery[0].src : ""));
 
   const activeSlug = isShaker
-    ? isNude
-      ? "favior-pro-series-shaker-700ml-desert-nude"
-      : "favior-pro-series-shaker-stealth-black"
+    ? "favior-pro-series-shaker-stealth-black"
     : product.slug;
 
   const [selectedSize, setSelectedSize] = useState(

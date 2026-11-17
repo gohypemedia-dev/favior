@@ -84,6 +84,16 @@ export default function Navbar() {
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
 
+  const handleShakersClick = (e: React.MouseEvent) => {
+    if (typeof window !== "undefined" && window.location.pathname === "/") {
+      e.preventDefault();
+      const el = document.getElementById("section-3d-model");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  };
+
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -131,9 +141,8 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={`aesop-header ${
-          isScrolled ? "is-scrolled" : ""
-        } ${isVisible ? "nav-visible" : "nav-hidden"}`}
+        className={`aesop-header ${isScrolled ? "is-scrolled" : ""
+          } ${isVisible ? "nav-visible" : "nav-hidden"}`}
       >
         <div className="aesop-nav-top">
           {/* Mobile Hamburger Button */}
@@ -160,7 +169,7 @@ export default function Navbar() {
           {/* Left: Category Links (Desktop only) */}
           <div className="nav-left nav-desktop-left hidden lg:flex">
             <ul className="nav-category-links">
-              <li><a href="/shakers">Shakers</a></li>
+              <li><a href="/#section-3d-model" onClick={handleShakersClick}>Shakers</a></li>
               <li><a href="/collections">Collections</a></li>
             </ul>
           </div>
@@ -221,21 +230,21 @@ export default function Navbar() {
                   >
                     <UserIcon />
                   </a>
-                  
+
                   {/* Dropdown Menu on Hover */}
                   <div className="absolute top-full right-0 pt-2 opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all duration-200 z-50">
                     <div className="bg-white border border-zinc-100 shadow-xl flex flex-col min-w-[160px] py-1">
-                      <a 
-                        href={data.user.role === "ADMIN" ? "/dashboard" : "/profile"} 
+                      <a
+                        href={data.user.role === "ADMIN" ? "/dashboard" : "/profile"}
                         className="text-xs font-medium uppercase tracking-[0.08em] text-zinc-900 px-4 py-2.5 hover:bg-zinc-50 transition-colors truncate block"
                       >
                         {data.user.name}
                       </a>
                       <div className="h-px w-full bg-zinc-100 my-1" />
-                      <button 
+                      <button
                         onClick={() => {
                           authClient.signOut().then(() => window.location.reload());
-                        }} 
+                        }}
                         className="text-xs font-medium uppercase tracking-[0.08em] text-zinc-500 hover:text-zinc-900 px-4 py-2.5 text-left w-full hover:bg-zinc-50 transition-colors"
                       >
                         LOGOUT
@@ -380,8 +389,11 @@ export default function Navbar() {
                   </a>
                 )}
                 <a
-                  href="/shakers"
-                  onClick={() => setMobileMenuOpen(false)}
+                  href="/#section-3d-model"
+                  onClick={(e) => {
+                    setMobileMenuOpen(false);
+                    handleShakersClick(e);
+                  }}
                   className="flex items-center justify-between h-[54px] border-b border-zinc-100 text-[13px] font-medium uppercase tracking-[0.08em] text-zinc-600 hover:text-zinc-900 transition-colors"
                 >
                   <span>SHAKERS</span>

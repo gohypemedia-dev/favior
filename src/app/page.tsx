@@ -7,6 +7,7 @@ import Model3DSection from "@/components/Model3DSection";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import Navbar from "@/components/Navbar";
 import HeroVideo from "@/components/HeroVideo";
+import ComboBuyNowButton from "@/components/ComboBuyNowButton";
 import FaqSection from "@/components/FaqSection";
 import SiteFooter from "@/components/SiteFooter";
 import { db } from "@/lib/db";
@@ -137,6 +138,7 @@ export default async function Home() {
   // DB-driven images for split sections — find by slug
   const duffleProduct = dbProducts.find((p: any) => p.slug === "favior-heritage-gym-duffle-bag");
   const shakerProduct = dbProducts.find((p: any) => p.slug === "favior-pro-series-shaker-stealth-black");
+  const comboProduct = dbProducts.find((p: any) => p.slug === "favior-complete-gym-kit");
   const duffleImg: string = duffleProduct?.mainImage ?? "";
   const shakerImg: string = shakerProduct?.mainImage ?? "";
 
@@ -155,7 +157,7 @@ export default async function Home() {
       <HeroVideo banners={activeBanners} />
 
       {/* ── 3D Interactive Model Section ── */}
-      <div id="section-3d-model">
+      <div id="section-3d-model" className="scroll-mt-14 sm:scroll-mt-16">
         <Model3DSection />
       </div>
 
@@ -289,7 +291,7 @@ export default async function Home() {
 
         {/* End-to-End High-Impact Combo Pack Banner */}
         <Link
-          href="/all-products"
+          href="/products/favior-complete-gym-kit"
           className="group relative block w-full bg-white transition-opacity hover:opacity-95"
           style={{ width: "100%" }}
         >
@@ -304,6 +306,21 @@ export default async function Home() {
             />
           </div>
         </Link>
+
+        {/* Buy Now Button Below Banner */}
+        <ComboBuyNowButton
+          product={
+            comboProduct
+              ? {
+                  id: comboProduct.id,
+                  slug: comboProduct.slug,
+                  name: comboProduct.name,
+                  price: comboProduct.price,
+                  image: comboProduct.mainImage,
+                }
+              : undefined
+          }
+        />
       </section>
       )}
 
