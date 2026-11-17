@@ -180,7 +180,7 @@ export default function Navbar() {
           </a>
 
           {/* Right Section: Search Icon, Account Icon, Cart Icon */}
-          <div className="nav-right flex items-center justify-end gap-0.5 sm:gap-4">
+          <div className="nav-right flex items-center justify-end gap-0.5 sm:gap-1">
             {/* Search Icon & Expandable Bar */}
             <div className="relative hidden sm:flex items-center justify-center">
               {searchOpen ? (
@@ -205,7 +205,7 @@ export default function Navbar() {
                   type="button"
                   aria-label="Search"
                   onClick={() => setSearchOpen(true)}
-                  className="nav-icon-link flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 cursor-pointer text-zinc-900 hover:opacity-60 transition-opacity"
+                  className="nav-icon-link flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 cursor-pointer text-zinc-900 hover:opacity-60 transition-opacity"
                   title="Search"
                 >
                   <SearchIcon />
@@ -218,7 +218,7 @@ export default function Navbar() {
                 <div className="group relative flex items-center justify-center">
                   <a
                     href={data.user.role === "ADMIN" ? "/dashboard" : "/profile"}
-                    className="nav-icon-link flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 text-zinc-900 hover:opacity-60 transition-opacity"
+                    className="nav-icon-link flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 text-zinc-900 hover:opacity-60 transition-opacity"
                     aria-label="Account"
                   >
                     <UserIcon />
@@ -249,7 +249,7 @@ export default function Navbar() {
             ) : (
               <a
                 href="/login"
-                className="nav-icon-link hidden sm:flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 text-zinc-900 hover:opacity-60 transition-opacity"
+                className="nav-icon-link hidden sm:flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 text-zinc-900 hover:opacity-60 transition-opacity"
                 aria-label="Account"
                 title="Account"
               >
@@ -261,7 +261,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={openWishlist}
-              className="nav-cart-badge flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 text-zinc-900 hover:opacity-60 transition-opacity relative cursor-pointer"
+              className="nav-cart-badge flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 text-zinc-900 hover:opacity-60 transition-opacity relative cursor-pointer"
               aria-label="View Wishlist"
               title="View Wishlist"
             >
@@ -273,7 +273,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={openCart}
-              className="nav-cart-badge flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 text-zinc-900 hover:opacity-60 transition-opacity relative cursor-pointer"
+              className="nav-cart-badge flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 text-zinc-900 hover:opacity-60 transition-opacity relative cursor-pointer"
               aria-label="View Cart"
               title="View Cart"
             >
@@ -351,6 +351,36 @@ export default function Navbar() {
 
               {/* Category Rows matching evrydae.com layout */}
               <div className="flex flex-col">
+                {data?.user ? (
+                  <div className="flex flex-col border-b border-zinc-100 bg-zinc-50/50">
+                    <a
+                      href={data.user.role === "ADMIN" ? "/dashboard" : "/profile"}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center justify-between h-[54px] px-2 text-[13px] font-medium uppercase tracking-[0.08em] text-zinc-900 hover:text-black transition-colors"
+                    >
+                      <span>HI, {data.user.name}</span>
+                      <UserIcon />
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        authClient.signOut().then(() => window.location.reload());
+                      }}
+                      className="flex items-center justify-between h-[54px] px-2 border-t border-zinc-100 text-[13px] font-medium uppercase tracking-[0.08em] text-zinc-500 hover:text-zinc-900 transition-colors w-full text-left"
+                    >
+                      <span>LOGOUT</span>
+                    </button>
+                  </div>
+                ) : (
+                  <a
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-between h-[54px] border-b border-zinc-100 text-[13px] font-medium uppercase tracking-[0.08em] text-zinc-900 hover:text-black transition-colors"
+                  >
+                    <span>MY ACCOUNT</span>
+                    <UserIcon />
+                  </a>
+                )}
                 <a
                   href="/shakers"
                   onClick={() => setMobileMenuOpen(false)}
@@ -391,36 +421,7 @@ export default function Navbar() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                   </svg>
                 </a>
-                {data?.user ? (
-                  <div className="flex flex-col border-b border-zinc-100">
-                    <a
-                      href={data.user.role === "ADMIN" ? "/dashboard" : "/profile"}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center justify-between h-[54px] text-[13px] font-medium uppercase tracking-[0.08em] text-zinc-900 hover:text-black transition-colors"
-                    >
-                      <span>HI, {data.user.name}</span>
-                      <UserIcon />
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        authClient.signOut().then(() => window.location.reload());
-                      }}
-                      className="flex items-center justify-between h-[54px] border-t border-zinc-100 text-[13px] font-medium uppercase tracking-[0.08em] text-zinc-500 hover:text-zinc-900 transition-colors w-full text-left"
-                    >
-                      <span>LOGOUT</span>
-                    </button>
-                  </div>
-                ) : (
-                  <a
-                    href="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-between h-[54px] border-b border-zinc-100 text-[13px] font-medium uppercase tracking-[0.08em] text-zinc-600 hover:text-zinc-900 transition-colors"
-                  >
-                    <span>MY ACCOUNT</span>
-                    <UserIcon />
-                  </a>
-                )}
+
                 <button
                   type="button"
                   onClick={() => {

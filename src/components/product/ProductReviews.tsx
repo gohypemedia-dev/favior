@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { Star, Check, X, ThumbsUp } from "lucide-react";
 import type { Review } from "@/types/product";
+import { getReviewsBySlug } from "./reviews-actions";
+import Link from "next/link";
 
 const INITIAL_REVIEWS: Review[] = [
   {
@@ -79,20 +81,31 @@ export function ProductReviews({
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
-    const key = `reviews_${productSlug}`;
-    const stored = localStorage.getItem(key);
-    if (stored) {
+    const fetchReviews = async () => {
       try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          setReviews([...parsed, ...INITIAL_REVIEWS]);
-        }
-      } catch {
+        const dbReviews = await getReviewsBySlug(productSlug);
+        const mappedDbReviews = dbReviews.map(r => ({
+          id: r.id,
+          name: r.user?.name || "Customer",
+          rating: r.rating,
+          title: r.title || "",
+          body: r.text || "",
+          date: new Date(r.createdAt).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }),
+          verified: r.verifiedPurchase,
+          helpfulCount: r.helpfulCount || 0,
+        }));
+        
+        // Merge DB reviews with initial reviews for visual sake
+        setReviews([...mappedDbReviews, ...INITIAL_REVIEWS]);
+      } catch (err) {
         setReviews(INITIAL_REVIEWS);
       }
-    } else {
-      setReviews(INITIAL_REVIEWS);
-    }
+    };
+    fetchReviews();
   }, [productSlug]);
 
   const saveReviewsToStorage = (updatedReviews: Review[]) => {
@@ -128,43 +141,9 @@ export function ProductReviews({
     saveReviewsToStorage(nextReviews);
   };
 
+  // Modal for reviews is removed in favor of the Profile > Reviews flow
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim() || !title.trim() || !body.trim()) {
-      setFormError("Please fill out all required fields.");
-      return;
-    }
-
-    const newReview: Review = {
-      id: `user-${Date.now()}`,
-      name: name.trim(),
-      rating,
-      title: title.trim(),
-      body: body.trim(),
-      date: new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }),
-      verified: true,
-      helpfulCount: 0,
-    };
-
-    const nextReviews = [newReview, ...reviews];
-    setReviews(nextReviews);
-    saveReviewsToStorage(nextReviews);
-
-    setIsSubmitted(true);
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setIsModalOpen(false);
-      setName("");
-      setEmail("");
-      setRating(5);
-      setTitle("");
-      setBody("");
-      setFormError("");
-    }, 1600);
   };
 
   return (
@@ -285,9 +264,8 @@ export function ProductReviews({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setIsModalOpen(true)}
+          <Link
+            href="/profile/reviews"
             style={{
               backgroundColor: "#000000",
               color: "#FFFFFF",
@@ -299,13 +277,14 @@ export function ProductReviews({
               letterSpacing: "0.16em",
               cursor: "pointer",
               borderRadius: "0px",
+              textDecoration: "none",
               transition: "opacity 0.2s ease",
             }}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
             onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
           >
             WRITE A REVIEW
-          </button>
+          </Link>
         </div>
 
         {/* Divider Line */}

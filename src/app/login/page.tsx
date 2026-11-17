@@ -109,10 +109,10 @@ function AuthForm() {
 
   return (
     <div style={{ width: "100%", display: "flex", flex: "1 1 0%", backgroundColor: "#fff" }}>
-      <div style={{ display: "grid", width: "100%", minHeight: "calc(100vh - 70px)", gridTemplateColumns: "repeat(12, minmax(0, 1fr))" }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2" style={{ width: "100%", minHeight: "calc(100vh - 70px)" }}>
         
         {/* Left Side: Editorial Lifestyle Photo */}
-        <div style={{ position: "relative", backgroundColor: "#f1f5f9", minHeight: "100%", overflow: "hidden", gridColumn: "span 6 / span 6" }} className="hidden lg:block">
+        <div style={{ position: "relative", backgroundColor: "#f1f5f9", minHeight: "100%", overflow: "hidden" }} className="hidden lg:block">
           <Image
             src="/product_showcase_mosaic.png"
             alt="Favior Gym Gear Products"
@@ -124,8 +124,8 @@ function AuthForm() {
         </div>
 
         {/* Right Side: Editorial Form */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "3rem 1.5rem", backgroundColor: "#fff", gridColumn: "span 6 / span 6" }}>
-          <div style={{ width: "100%", maxWidth: "460px", margin: "auto", padding: "1.5rem 0" }}>
+        <div className="flex flex-col items-center justify-center w-full" style={{ padding: "3rem 1.5rem", backgroundColor: "#fff" }}>
+          <div className="w-full max-w-[460px] mx-auto py-6 px-4 sm:px-0">
             
             <div style={{ marginBottom: "2rem" }}>
               <h2 style={{ fontSize: "1.25rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.05em", color: "#0f172a" }}>

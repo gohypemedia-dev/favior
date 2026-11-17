@@ -1265,7 +1265,7 @@ body {
     display: flex !important;
   }
   .aesop-nav-top .nav-right {
-    gap: 6px;
+    gap: 0px;
   }
 }
 
@@ -3237,3 +3237,6 @@ body {
   animation: marqueeRight 35s linear infinite;
   will-change: transform;
 }
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
