@@ -48,7 +48,7 @@ function getDbInstance(): PrismaClient {
   return globalForPrisma.prisma;
 }
 
-export const db: any = new Proxy({} as any, {
+export const db = new Proxy({} as PrismaClient, {
   get(_target, prop) {
     const instance = getDbInstance();
     const value = (instance as any)[prop];

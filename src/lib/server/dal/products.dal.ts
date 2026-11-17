@@ -187,7 +187,8 @@ export async function updateProduct(
   id: string,
   data: UpdateProductInput
 ) {
-  const { categoryId, newMedia, mediaOrder, removeMediaIds, features, ...productData } = data;
+  // `media` is create-only; edits use newMedia / mediaOrder / removeMediaIds instead.
+  const { categoryId, newMedia, mediaOrder, removeMediaIds, features, colors, specs, media: _media, ...productData } = data;
 
   const mediaChanges =
     newMedia?.length || mediaOrder?.length || removeMediaIds?.length
@@ -216,6 +217,8 @@ export async function updateProduct(
         deleteMany: {},
         create: features.map(f => ({ featureText: f }))
       } : undefined,
+      colors: colors !== undefined ? { deleteMany: {}, create: colors } : undefined,
+      specs: specs !== undefined ? { deleteMany: {}, create: specs } : undefined,
     },
     include: {
       colors: true,
