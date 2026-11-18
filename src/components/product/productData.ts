@@ -50,6 +50,9 @@ export type ProductDetail = {
   price: string
   sold: string
   rating: string
+  reviewsCount?: string
+  socialProofText?: string
+  shippingNotice?: string
   description: string
   detailsBody: string
   careNotes: string[]

@@ -8,10 +8,16 @@ import { ProductAdditionalDetailsSection } from "@/components/admin/products/pro
 import { ProductDescriptionEditor } from "@/components/admin/products/product-description-editor";
 import { HomeShowcaseToggle } from "@/components/admin/products/home-showcase-toggle";
 import { ProductMediaUploader } from "@/components/admin/products/product-media-uploader";
-import { ProductVariantsSection } from "@/components/admin/products/product-variants-section";
 import { uploadProductImage } from "@/lib/client/upload-product-image";
 import { parsePriceNumber } from "@/lib/format-price";
 import { ProductFeaturesSection } from "@/components/admin/products/product-features-section";
+import {
+  ProductBadgesSection,
+  ProductColorsSection,
+  ProductSizesSection,
+  ProductDetailsAccordionsSection,
+  type ColorItem,
+} from "@/components/admin/products/product-custom-fields-sections";
 
 export type ProductCategoryOption = {
   id: string;
@@ -59,6 +65,23 @@ export function AddProductForm({ categories }: { categories: ProductCategoryOpti
   const [status, setStatus] = useState("active");
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [features, setFeatures] = useState<string[]>([]);
+  const [subtitle, setSubtitle] = useState("FAVIOR PRO ATHLETICS");
+  const [verifiedBadge, setVerifiedBadge] = useState("88 VERIFIED ORDERS");
+  const [socialProofText, setSocialProofText] = useState("1,238+ SOLD TODAY • LOVED BY THE COMMUNITY");
+  const [shippingNotice, setShippingNotice] = useState("INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹999");
+  const [rating, setRating] = useState("4.9");
+  const [reviewsCount, setReviewsCount] = useState("128");
+  const [colors, setColors] = useState<ColorItem[]>([{ name: "Classic Black", bgHex: "#111111" }]);
+  const [sizes, setSizes] = useState<string[]>([]);
+  const [detailsBody, setDetailsBody] = useState("");
+  const [careNotes, setCareNotes] = useState<string[]>([
+    "Hand wash or rinse with lukewarm water after intense sessions.",
+    "Store in a clean, ventilated gear compartment.",
+  ]);
+  const [shippingNotes, setShippingNotes] = useState<string[]>([
+    "Free express delivery across India.",
+    "100% genuine product guarantee with instant replacement warranty.",
+  ]);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -111,11 +134,21 @@ export function AddProductForm({ categories }: { categories: ProductCategoryOpti
           oldPrice: numericCompareAtPrice !== undefined ? `₹${numericCompareAtPrice.toFixed(2)}` : undefined,
           description: description.trim(),
           mainImage,
-          shippingNotice: "Shipping details will be provided at checkout.",
+          subtitle: subtitle.trim() || null,
+          verifiedBadge: verifiedBadge.trim() || null,
+          socialProofText: socialProofText.trim() || null,
+          shippingNotice: shippingNotice.trim() || "INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹999",
+          rating: Number(rating) || 4.9,
+          reviewsCount: reviewsCount.trim() || "128",
+          detailsBody: detailsBody.trim() || null,
+          colors: colors.length > 0 ? colors : undefined,
+          sizes: sizes.filter((s) => s.trim() !== ""),
+          careNotes: careNotes.map((n) => n.trim()).filter(Boolean),
+          shippingNotes: shippingNotes.map((n) => n.trim()).filter(Boolean),
           quantity: numericQuantity,
           showInBestSellers,
           media: uploadedMedia,
-          features: features.map(f => f.trim()).filter(f => f !== ""),
+          features: features.map((f) => f.trim()).filter((f) => f !== ""),
         }),
       });
       const result = await response.json();
@@ -197,8 +230,33 @@ export function AddProductForm({ categories }: { categories: ProductCategoryOpti
             </div>
           </Card>
 
-          <ProductVariantsSection />
-          <ProductAdditionalDetailsSection />
+          <ProductBadgesSection
+            subtitle={subtitle}
+            setSubtitle={setSubtitle}
+            verifiedBadge={verifiedBadge}
+            setVerifiedBadge={setVerifiedBadge}
+            socialProofText={socialProofText}
+            setSocialProofText={setSocialProofText}
+            shippingNotice={shippingNotice}
+            setShippingNotice={setShippingNotice}
+            rating={rating}
+            setRating={setRating}
+            reviewsCount={reviewsCount}
+            setReviewsCount={setReviewsCount}
+          />
+
+          <ProductColorsSection colors={colors} onChange={setColors} />
+
+          <ProductSizesSection sizes={sizes} onChange={setSizes} />
+
+          <ProductDetailsAccordionsSection
+            detailsBody={detailsBody}
+            setDetailsBody={setDetailsBody}
+            careNotes={careNotes}
+            setCareNotes={setCareNotes}
+            shippingNotes={shippingNotes}
+            setShippingNotes={setShippingNotes}
+          />
           <Card title="Search engine listing" style={{"marginTop":"1rem"}} actions={<Pencil className="size-4 text-black/55" />}><p style={{"paddingLeft":"1rem","paddingRight":"1rem","paddingBottom":"1.25rem","fontSize":"0.875rem","lineHeight":"1.25rem"}}>{title ? `${title} · ${selectedCategory?.title || "Choose a category"}` : "Add a title and description to see how this product might appear in a search engine listing."}</p></Card>
         </div>
 

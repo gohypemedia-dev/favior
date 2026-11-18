@@ -12,6 +12,7 @@ export type HeroBannerProps = {
   alt: string;
   cta: string | null;
   linkUrl: string | null;
+  category?: string | null;
 };
 
 
@@ -215,23 +216,28 @@ export default function HeroVideo({ banners = [] }: { banners?: HeroBannerProps[
     title: "PREMIUM FITNESS ESSENTIALS",
     caption: "Crafted for performance. Designed for you.",
     src: s.image,
+    mobileSrc: null,
     alt: s.alt,
     cta: "EXPLORE COLLECTION",
-    linkUrl: "/all-products"
+    linkUrl: "/all-products",
+    category: "hero"
   }));
 
-  const activeBanner = slides[activeSlide] || slides[0];
+  const safeIndex = activeSlide < slides.length ? activeSlide : 0;
+  const activeBanner = slides[safeIndex] || slides[0];
 
   useEffect(() => {
+    if (slides.length <= 1) return;
+
     const timer = setInterval(() => {
       setActiveSlide((current) => {
         setPrevSlide(current);
         return (current + 1) % slides.length;
       });
-    }, 4000); // Increased interval to 4000ms for better readability of text
+    }, 4000); // 4000ms for comfortable reading of text
 
     return () => clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
   useEffect(() => {
     if (prevSlide !== null) {
@@ -320,14 +326,39 @@ export default function HeroVideo({ banners = [] }: { banners?: HeroBannerProps[
                 className={`hero-stage-slide ${isActive ? "active" : ""} ${isPrev ? "prev" : ""}`}
                 aria-hidden={!isActive}
               >
-                <Image
-                  src={slide.src}
-                  alt={slide.alt || slide.title || "Hero Slide"}
-                  fill
-                  priority
-                  sizes="(max-width: 1440px) 100vw, 1440px"
-                  className="hero-product-img"
-                />
+                {slide.mobileSrc ? (
+                  <>
+                    <div className="hidden sm:block absolute inset-0 w-full h-full">
+                      <Image
+                        src={slide.src}
+                        alt={slide.alt || slide.title || "Hero Slide"}
+                        fill
+                        priority
+                        sizes="(max-width: 1440px) 100vw, 1440px"
+                        className="hero-product-img"
+                      />
+                    </div>
+                    <div className="block sm:hidden absolute inset-0 w-full h-full">
+                      <Image
+                        src={slide.mobileSrc}
+                        alt={slide.alt || slide.title || "Hero Slide"}
+                        fill
+                        priority
+                        sizes="100vw"
+                        className="hero-product-img"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <Image
+                    src={slide.src}
+                    alt={slide.alt || slide.title || "Hero Slide"}
+                    fill
+                    priority
+                    sizes="(max-width: 1440px) 100vw, 1440px"
+                    className="hero-product-img"
+                  />
+                )}
               </div>
             );
           })}

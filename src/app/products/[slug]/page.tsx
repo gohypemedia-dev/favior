@@ -42,6 +42,67 @@ async function fetchDbProduct(slug: string) {
 
   if (product) return product;
 
+  if (targetSlug === "favior-complete-gym-kit") {
+    return {
+      id: "favior-complete-gym-kit",
+      name: "Favior Complete Gym Kit",
+      slug: "favior-complete-gym-kit",
+      price: "1999",
+      oldPrice: "2999",
+      rating: 5.0,
+      reviewsCount: "215",
+      description:
+        "The Favior Complete Gym Kit is the ultimate all-in-one suite for dedicated athletes. Includes our high-grade 700ml insulated shaker bottle, heavy-duty elasticized wrist wraps for heavy lifts, and natural Malaysian latex resistance loops.",
+      mainImage: "/favior_complete_gym_kit.jpg",
+      shippingNotice: "Free express delivery across India. Ships within 24 hours.",
+      colors: [{ name: "Midnight Black", bgHex: "#111111" }],
+      category: { title: "Bundles & Kits", slug: "bundles" },
+      media: [
+        { url: "/favior_complete_gym_kit.jpg", sortOrder: 0 },
+        { url: "/favior_pro_shaker_black.jpg", sortOrder: 1 },
+        { url: "/favior_heritage_duffle_bag.jpg", sortOrder: 2 },
+      ],
+      features: [
+        { featureText: "Complete Athlete Suite: Shaker + Wrist Wraps + Resistance Loops" },
+        { featureText: "100% Leak-Proof Insulated Shaker Bottle" },
+        { featureText: "Reinforced Heavy-Gauge Wrist Wraps for Maximum Joint Support" },
+        { featureText: "Premium Box Packaging — Ideal For Gifting" },
+      ],
+      specs: [
+        { label: "Bundle Includes", value: "Shaker (700ml), Wrist Wraps (Pair), Loop Bands" },
+        { label: "Material", value: "Kitchen-Grade Stainless Steel & Heavy-Duty Elastic" },
+        { label: "Warranty", value: "1 Year Replacement Warranty" },
+      ],
+    };
+  }
+
+  if (targetSlug === "favior-heavy-duty-wrist-wraps") {
+    return {
+      id: "favior-heavy-duty-wrist-wraps",
+      name: "Favior Phantom Shaker (700ml)",
+      slug: "favior-pro-series-shaker-stealth-black",
+      price: "899",
+      oldPrice: "1299",
+      rating: 4.8,
+      reviewsCount: "98",
+      description:
+        "Shatterproof BPA-free Tritan with cyclone turbine mixing wheel and 100% leak-proof lid.",
+      mainImage: "/favior_pro_shaker_black.jpg",
+      shippingNotice: "Free express delivery across India.",
+      colors: [{ name: "Stealth Black", bgHex: "#111111" }],
+      category: { title: "Shakers & Flasks", slug: "shakers" },
+      media: [{ url: "/favior_pro_shaker_black.jpg", sortOrder: 0 }],
+      features: [
+        { featureText: "Cyclone turbine mixing wheel for smooth shakes" },
+        { featureText: "100% leak-proof acoustic seal cap" },
+      ],
+      specs: [
+        { label: "Capacity", value: "700ml" },
+        { label: "Material", value: "BPA-Free Tritan" },
+      ],
+    };
+  }
+
   // Fallback to latest product if slug is not found
   return db.product.findFirst({
     orderBy: { createdAt: "desc" },
@@ -122,7 +183,7 @@ function mapToProductDetail(p: any): ProductDetail {
     id: p.id,
     merchandiseId: p.id,
     slug: p.slug,
-    editLabel: "FAVIOR PRO ATHLETICS",
+    editLabel: p.subtitle || "FAVIOR PRO ATHLETICS",
     title: p.name,
     breadcrumb: [
       { label: "Homepage", href: "/" },
@@ -131,21 +192,34 @@ function mapToProductDetail(p: any): ProductDetail {
     ],
     originalPrice: oldPriceDisplay,
     price: priceDisplay,
-    sold: `${p.reviewsCount || "150+"} Verified Orders`,
+    sold: p.verifiedBadge || `${p.reviewsCount || "150+"} Verified Orders`,
     rating: (p.rating || 4.9).toString(),
+    reviewsCount: p.reviewsCount || "128",
+    socialProofText: p.socialProofText || "1,238+ SOLD TODAY • LOVED BY THE COMMUNITY",
+    shippingNotice: p.shippingNotice || "INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹999",
     description: p.description,
-    detailsBody: p.description,
-    careNotes: [
-      "Hand wash or rinse with lukewarm water after intense sessions.",
-      "Store in a clean, ventilated gear compartment.",
-    ],
-    shippingNotes: [
-      p.shippingNotice || "Free express delivery across India.",
-      "100% genuine product guarantee with instant replacement warranty.",
-    ],
+    detailsBody: p.detailsBody || p.description,
+    specifications:
+      p.features && p.features.length > 0
+        ? p.features.map((f: any) => f.featureText)
+        : undefined,
+    careNotes:
+      p.careNotes && p.careNotes.length > 0
+        ? p.careNotes
+        : [
+            "Hand wash or rinse with lukewarm water after intense sessions.",
+            "Store in a clean, ventilated gear compartment.",
+          ],
+    shippingNotes:
+      p.shippingNotes && p.shippingNotes.length > 0
+        ? p.shippingNotes
+        : [
+            p.shippingNotice || "INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹999",
+            "100% genuine product guarantee with instant replacement warranty.",
+          ],
     colorName: finalColors[0].name,
     colors: finalColors,
-    sizes: isShaker ? ["700ML"] : [],
+    sizes: p.sizes && p.sizes.length > 0 ? p.sizes : isShaker ? ["700ML"] : [],
     gallery: finalGallery,
     deliveryPerks: [
       { label: "Fast delivery", detail: "2-4 days", icon: "truck" },

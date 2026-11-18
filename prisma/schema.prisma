@@ -91,19 +91,26 @@ model Category {
 // ─── Products ────────────────────────────────────────────────────────────────
 
 model Product {
-  id                String  @id @default(cuid())
-  slug              String  @unique
+  id                String   @id @default(cuid())
+  slug              String   @unique
   name              String
+  subtitle          String?  @map("subtitle")
   price             String
-  oldPrice          String? @map("old_price")
+  oldPrice          String?  @map("old_price")
   discount          String?
-  rating            Float   @default(0)
-  reviewsCount      String  @default("0") @map("reviews_count")
+  rating            Float    @default(0)
+  reviewsCount      String   @default("0") @map("reviews_count")
+  verifiedBadge     String?  @map("verified_badge")
+  socialProofText   String?  @map("social_proof_text")
   description       String
-  mainImage         String  @map("main_image")
-  shippingNotice    String  @map("shipping_notice")
-  quantity          Int     @default(0)
-  showInBestSellers Boolean @default(false) @map("show_in_best_sellers")
+  detailsBody       String?  @map("details_body")
+  mainImage         String   @map("main_image")
+  shippingNotice    String   @default("INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹999") @map("shipping_notice")
+  quantity          Int      @default(0)
+  showInBestSellers Boolean  @default(false) @map("show_in_best_sellers")
+  sizes             String[] @default([])
+  careNotes         String[] @default([]) @map("care_notes")
+  shippingNotes     String[] @default([]) @map("shipping_notes")
 
   categoryId String   @map("category_id")
   category   Category @relation(fields: [categoryId], references: [id])
@@ -294,6 +301,7 @@ model HeroBanner {
   caption   String?
   src       String
   mobileSrc String?  @map("mobile_src")
+  images    String[] @default([])
   alt       String
   cta       String?  @default("Shop now")
   linkUrl   String?  @map("link_url")

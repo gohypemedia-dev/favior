@@ -64,8 +64,8 @@ export function ProductSummary({
   const [selectedSize, setSelectedSize] = useState(
     product.sizes && product.sizes.length > 0 ? product.sizes[0] : "Standard"
   );
-  const [reviewsCount, setReviewsCount] = useState(128);
-  const [averageRating, setAverageRating] = useState(Number(product.rating) || 4.8);
+  const [reviewsCount, setReviewsCount] = useState(Number(product.reviewsCount) || 128);
+  const [averageRating, setAverageRating] = useState(Number(product.rating) || 4.9);
   const [cartState, setCartState] = useState<"idle" | "adding" | "added">("idle");
   const isWishlisted = isInWishlist(isShaker ? activeSlug : (product.id || product.slug));
   const [isDescExpanded, setIsDescExpanded] = useState(false);
@@ -283,7 +283,7 @@ export function ProductSummary({
               margin: "6px 0 0 0",
             }}
           >
-            INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹999
+            {product.shippingNotice || "INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹999"}
           </p>
         </div>
 
@@ -774,16 +774,20 @@ export function ProductSummary({
                 margin: 0,
               }}
             >
-              1,238+ SOLD TODAY{" "}
-              <span
-                style={{
-                  fontWeight: "400",
-                  color: "#888888",
-                  letterSpacing: "0.06em",
-                }}
-              >
-                • LOVED BY THE COMMUNITY
-              </span>
+              {product.socialProofText || (
+                <>
+                  1,238+ SOLD TODAY{" "}
+                  <span
+                    style={{
+                      fontWeight: "400",
+                      color: "#888888",
+                      letterSpacing: "0.06em",
+                    }}
+                  >
+                    • LOVED BY THE COMMUNITY
+                  </span>
+                </>
+              )}
             </p>
           </div>
         </div>

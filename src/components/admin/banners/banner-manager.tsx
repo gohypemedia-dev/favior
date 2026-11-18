@@ -13,12 +13,25 @@ import {
   Loader2Icon,
   XIcon,
   RefreshCwIcon,
+  ExternalLinkIcon,
+  LayersIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  ChevronsUpIcon,
+  BoxIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 import type { HeroBannerItem } from "@/lib/server/controllers/banners.controller"
 import { uploadProductImage } from "@/lib/client/upload-product-image"
 
-type CategoryOption = { id: string; title: string; slug: string }
+const BANNER_TYPE_OPTIONS = [
+  { value: "hero", label: "Hero Section Banner (Main Homepage Slider)", desc: "Displayed at top of homepage with headline, tagline, and CTA button." },
+  { value: "split_duffle", label: "Split Banner 1: Built for the Gym (Duffle Bag)", desc: "Editorial split banner with duffle image on left & dark content on right." },
+  { value: "split_shaker", label: "Split Banner 2: Never Miss a Rep (Shaker Bottle)", desc: "Editorial split banner with light content on left & shaker bottle on right." },
+  { value: "build_your_kit", label: "Build Your Kit Section Banner", desc: "Displayed above or inside the custom kit builder section." },
+  { value: "split_section", label: "Other Split Editorial Feature Banner", desc: "Full-width featured spotlight editorial banner." },
+  { value: "promotional", label: "Promotional / Sale Banner", desc: "Campaign drops, seasonal sale highlights." },
+]
 
 export function BannerManager({ initialBanners }: { initialBanners: HeroBannerItem[] }) {
   const [banners, setBanners] = useState<HeroBannerItem[]>(initialBanners)
@@ -28,7 +41,6 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isUploadingDesktop, setIsUploadingDesktop] = useState(false)
   const [isUploadingMobile, setIsUploadingMobile] = useState(false)
-  const [categories, setCategories] = useState<CategoryOption[]>([])
 
   useEffect(() => {
     if (initialBanners && initialBanners.length > 0) {
@@ -42,17 +54,6 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
         .catch(() => {})
     }
   }, [initialBanners])
-
-  useEffect(() => {
-    fetch("/api/categories")
-      .then((res) => res.json())
-      .then((json) => {
-        if (json.success && Array.isArray(json.data)) {
-          setCategories(json.data)
-        }
-      })
-      .catch(() => {})
-  }, [])
 
   async function handleRestoreDefaults() {
     setIsSubmitting(true)
@@ -73,33 +74,28 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
   // Form State
   const [formData, setFormData] = useState({
     title: "",
-    category: "",
+    category: "hero",
     caption: "",
     src: "",
     mobileSrc: "",
     alt: "",
-    cta: "Shop now",
-    linkUrl: "/shop",
+    cta: "EXPLORE COLLECTION",
+    linkUrl: "/all-products",
     sortOrder: 0,
     isActive: true,
   })
-
-  function getCategoryLinkUrl(categoryTitle: string): string {
-    const cat = categories.find((c) => c.title === categoryTitle)
-    return cat ? `/shop?filter=${cat.slug}` : "/shop"
-  }
 
   function openAddModal() {
     setEditingBanner(null)
     setFormData({
       title: "",
-      category: "",
+      category: "hero",
       caption: "",
       src: "",
       mobileSrc: "",
       alt: "",
-      cta: "Shop now",
-      linkUrl: "/shop",
+      cta: "EXPLORE COLLECTION",
+      linkUrl: "/all-products",
       sortOrder: banners.length,
       isActive: true,
     })
@@ -108,22 +104,88 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
 
   function openEditModal(banner: HeroBannerItem) {
     setEditingBanner(banner)
-    const resolvedLink = banner.category
-      ? getCategoryLinkUrl(banner.category)
-      : banner.linkUrl || "/shop"
     setFormData({
-      title: banner.title,
-      category: banner.category || "",
+      title: banner.title || "",
+      category: banner.category || "hero",
       caption: banner.caption || "",
-      src: banner.src,
+      src: banner.src || "",
       mobileSrc: banner.mobileSrc || "",
-      alt: banner.alt || banner.title,
-      cta: banner.cta || "Shop now",
-      linkUrl: resolvedLink,
-      sortOrder: banner.sortOrder,
+      alt: banner.alt || banner.title || "",
+      cta: banner.cta || "EXPLORE COLLECTION",
+      linkUrl: banner.linkUrl || "/all-products",
+      sortOrder: banner.sortOrder ?? 0,
       isActive: banner.isActive,
     })
     setIsModalOpen(true)
+  }
+
+  // Reorder Handlers
+  async function saveReorder(newBanners: HeroBannerItem[]) {
+    // Optimistic local state update
+    const updatedWithSort = newBanners.map((b, idx) => ({ ...b, sortOrder: idx }))
+    setBanners(updatedWithSort)
+
+    try {
+      const bannerIds = newBanners.map((b) => b.id)
+      const res = await fetch("/api/admin/banners/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bannerIds }),
+      })
+
+      if (!res.ok) {
+        throw new Error("Failed to save reorder")
+      }
+      const data = await res.json()
+      if (Array.isArray(data)) {
+        setBanners(data)
+      }
+    } catch (err) {
+      console.error(err)
+      toast.error("Failed to persist order")
+    }
+  }
+
+  function handleMoveToTop(bannerId: string) {
+    const currentIndex = banners.findIndex((b) => b.id === bannerId)
+    if (currentIndex <= 0) return
+    const target = banners[currentIndex]
+    const rest = banners.filter((b) => b.id !== bannerId)
+    const updated = [target, ...rest]
+    saveReorder(updated)
+    toast.success(`"${target.title}" set to TOP (#1)!`)
+  }
+
+  function handleMoveUp(index: number) {
+    if (index <= 0) return
+    const updated = [...banners]
+    const temp = updated[index]
+    updated[index] = updated[index - 1]
+    updated[index - 1] = temp
+    saveReorder(updated)
+    toast.success("Banner moved up")
+  }
+
+  function handleMoveDown(index: number) {
+    if (index >= banners.length - 1) return
+    const updated = [...banners]
+    const temp = updated[index]
+    updated[index] = updated[index + 1]
+    updated[index + 1] = temp
+    saveReorder(updated)
+    toast.success("Banner moved down")
+  }
+
+  function handleSetPosition(bannerId: string, newPosition: number) {
+    const currentIndex = banners.findIndex((b) => b.id === bannerId)
+    if (currentIndex === -1 || newPosition < 0 || newPosition >= banners.length) return
+    if (currentIndex === newPosition) return
+
+    const updated = [...banners]
+    const [movedItem] = updated.splice(currentIndex, 1)
+    updated.splice(newPosition, 0, movedItem)
+    saveReorder(updated)
+    toast.success(`Moved to position #${newPosition + 1}`)
   }
 
   async function handleToggleActive(banner: HeroBannerItem) {
@@ -203,7 +265,7 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!formData.title.trim()) {
-      toast.error("Banner title is required")
+      toast.error("Banner title/headline is required")
       return
     }
     if (!formData.src.trim()) {
@@ -214,7 +276,6 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
     setIsSubmitting(true)
     try {
       if (editingBanner) {
-        // Update existing banner
         const res = await fetch(`/api/admin/banners/${editingBanner.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -227,9 +288,8 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
         const updated = await res.json()
 
         setBanners((prev) => prev.map((b) => (b.id === updated.id ? updated : b)))
-        toast.success("Banner updated successfully")
+        toast.success("Banner updated successfully!")
       } else {
-        // Create new banner
         const res = await fetch("/api/admin/banners", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -242,7 +302,7 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
         const created = await res.json()
 
         setBanners((prev) => [...prev, created])
-        toast.success("New banner added successfully")
+        toast.success("New banner created successfully!")
       }
       setIsModalOpen(false)
     } catch (err: any) {
@@ -254,316 +314,1045 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
   }
 
   return (
-    <div style={{"display":"flex","flex":"1 1 0%","flexDirection":"column","gap":"1.5rem","backgroundColor":"rgb(246,246,246)","padding":"1.5rem"}}>
+    <div style={{
+      display: "flex",
+      flex: "1 1 0%",
+      flexDirection: "column",
+      gap: "1.5rem",
+      backgroundColor: "#f6f6f6",
+      padding: "1.5rem",
+      minHeight: "100vh",
+    }}>
       {/* Header Bar */}
-      <div style={{"display":"flex","flexWrap":"wrap","alignItems":"center","justifyContent":"space-between","gap":"1rem"}}>
+      <div style={{
+        display: "flex",
+        flexWrap: "wrap",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "1rem",
+      }}>
         <div>
-          <h1 style={{"fontSize":"1.25rem","lineHeight":"1.75rem","fontWeight":"700","letterSpacing":"-0.025em","color":"rgb(0,0,0)"}}>Homepage Hero Banners</h1>
-          <p style={{"marginTop":"0.25rem","fontSize":"0.75rem","lineHeight":"1rem","color":"rgb(0,0,0,0.6)"}}>
-            Add, preview, edit, or delete slides for the main homepage carousel slider.
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            <h1 style={{
+              fontSize: "1.5rem",
+              fontWeight: 700,
+              letterSpacing: "-0.025em",
+              color: "#111827",
+              margin: 0,
+              lineHeight: 1.2,
+            }}>
+              Banner Management
+            </h1>
+            <span className="admin-pill-badge" style={{ backgroundColor: "#111827", color: "#ffffff" }}>
+              {banners.length} Total Banners
+            </span>
+          </div>
+          <p style={{ marginTop: "0.375rem", fontSize: "0.8125rem", color: "#6b7280", lineHeight: 1.4 }}>
+            All website banners in vertical display order. Use position controls to set any banner to top or move up/down.
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={openAddModal}
-          style={{"display":"inline-flex","alignItems":"center","gap":"0.5rem","borderRadius":"0.5rem","backgroundColor":"rgb(0,0,0,0.8)","paddingLeft":"1rem","paddingRight":"1rem","paddingTop":"0.5rem","paddingBottom":"0.5rem","fontSize":"0.75rem","lineHeight":"1rem","fontWeight":"600","color":"rgb(255,255,255)","boxShadow":"0 0 #0000, 0 0 #0000, 0 1px 2px 0 rgb(0,0,0,0.05)","transitionProperty":"color, background-color, border-color, text-decoration-color, fill, stroke","transitionTimingFunction":"cubic-bezier(0.4, 0, 0.2, 1)","transitionDuration":"150ms"}}
-        >
-          <PlusIcon className="size-4" />
-          Add New Banner
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <button
+            type="button"
+            onClick={handleRestoreDefaults}
+            disabled={isSubmitting}
+            className="admin-btn admin-btn-secondary"
+          >
+            {isSubmitting ? (
+              <Loader2Icon style={{ width: "1rem", height: "1rem", animation: "spin 1s linear infinite" }} />
+            ) : (
+              <RefreshCwIcon style={{ width: "1rem", height: "1rem", color: "#6b7280" }} />
+            )}
+            <span>Restore Defaults</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={openAddModal}
+            className="admin-btn admin-btn-primary"
+          >
+            <PlusIcon style={{ width: "1rem", height: "1rem" }} />
+            <span>Add New Banner</span>
+          </button>
+        </div>
       </div>
 
-      {/* Banner Cards Grid */}
+      {/* Live Storefront Status Banner */}
+      <div style={{
+        display: "flex",
+        flexWrap: "wrap",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "1rem",
+        borderRadius: "0.75rem",
+        border: "1.5px solid #e5e7eb",
+        backgroundColor: "#ffffff",
+        padding: "0.875rem 1.25rem",
+        boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
+      }}>
+        <div>
+          <h2 style={{ fontSize: "0.875rem", fontWeight: 700, color: "#111827", margin: 0 }}>
+            Vertical Display Order (Top to Bottom)
+          </h2>
+          <p style={{ fontSize: "0.75rem", color: "#6b7280", margin: "0.125rem 0 0 0" }}>
+            The banner at position <strong>#1 (TOP)</strong> appears first on the website. Click <strong>&quot;Set to Top&quot;</strong> or arrow buttons to reorder instantly.
+          </p>
+        </div>
+
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="admin-btn admin-btn-secondary"
+          style={{ height: "34px", minHeight: "34px", padding: "0 0.875rem", fontSize: "0.75rem" }}
+        >
+          <span>View Live Storefront</span>
+          <ExternalLinkIcon style={{ width: "0.75rem", height: "0.75rem", color: "#6b7280" }} />
+        </a>
+      </div>
+
+      {/* Vertical Banners Stack List */}
       {banners.length === 0 ? (
-        <div style={{"display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center","borderRadius":"1rem","borderWidth":"1px","borderStyle":"dashed","backgroundColor":"rgb(255,255,255)","paddingTop":"4rem","paddingBottom":"4rem","textAlign":"center"}}>
-          <ImageIcon style={{"color":"rgb(0,0,0,0.3)"}} />
-          <h3 style={{"marginTop":"0.75rem","fontSize":"0.875rem","lineHeight":"1.25rem","fontWeight":"600","color":"rgb(0,0,0)"}}>No hero banners created yet</h3>
-          <p style={{"marginTop":"0.25rem","fontSize":"0.75rem","lineHeight":"1rem"}}>Add your custom banner or load the default homepage hero banners.</p>
-          <div style={{"marginTop":"1rem","display":"flex","alignItems":"center","gap":"0.75rem"}}>
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: "1rem",
+          border: "1px dashed #d1d5db",
+          backgroundColor: "#ffffff",
+          padding: "4rem 2rem",
+          textAlign: "center",
+        }}>
+          <div style={{
+            width: "3rem",
+            height: "3rem",
+            borderRadius: "9999px",
+            backgroundColor: "#f3f4f6",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
+            <ImageIcon style={{ width: "1.5rem", height: "1.5rem", color: "#9ca3af" }} />
+          </div>
+          <h3 style={{ marginTop: "1rem", fontSize: "0.9375rem", fontWeight: 600, color: "#111827" }}>
+            No banners created yet
+          </h3>
+          <p style={{ marginTop: "0.25rem", maxWidth: "24rem", fontSize: "0.8125rem", color: "#6b7280" }}>
+            Add your custom banner or restore default hero banners to get started immediately.
+          </p>
+          <div style={{ marginTop: "1.25rem", display: "flex", alignItems: "center", gap: "0.75rem" }}>
             <button
               type="button"
               onClick={handleRestoreDefaults}
               disabled={isSubmitting}
-              style={{"display":"inline-flex","alignItems":"center","gap":"0.375rem","borderRadius":"0.5rem","borderWidth":"1px","borderColor":"rgb(0,0,0,0.2)","backgroundColor":"rgb(0,0,0,0.05)","paddingLeft":"0.875rem","paddingRight":"0.875rem","paddingTop":"0.375rem","paddingBottom":"0.375rem","fontSize":"0.75rem","lineHeight":"1rem","fontWeight":"600","color":"rgb(0,0,0)","opacity":"0.5"}}
+              className="admin-btn admin-btn-secondary"
             >
-              {isSubmitting ? <Loader2Icon style={{"animation":"spin 1s linear infinite"}} /> : <RefreshCwIcon className="size-3.5" />}
-              Load Default Banners
+              {isSubmitting ? (
+                <Loader2Icon style={{ width: "1rem", height: "1rem", animation: "spin 1s linear infinite" }} />
+              ) : (
+                <RefreshCwIcon style={{ width: "1rem", height: "1rem" }} />
+              )}
+              <span>Restore Defaults</span>
             </button>
 
             <button
               type="button"
               onClick={openAddModal}
-              style={{"display":"inline-flex","alignItems":"center","gap":"0.375rem","borderRadius":"0.5rem","backgroundColor":"rgb(0,0,0,0.8)","paddingLeft":"0.875rem","paddingRight":"0.875rem","paddingTop":"0.375rem","paddingBottom":"0.375rem","fontSize":"0.75rem","lineHeight":"1rem","fontWeight":"600","color":"rgb(255,255,255)"}}
+              className="admin-btn admin-btn-primary"
             >
-              <PlusIcon className="size-3.5" />
-              Add Custom Banner
+              <PlusIcon style={{ width: "1rem", height: "1rem" }} />
+              <span>Add Banner</span>
             </button>
           </div>
         </div>
       ) : (
-        <div style={{"display":"grid","gap":"1.5rem"}}>
-          {banners.map((banner) => (
-            <div
-              key={banner.id}
-              className={`group relative flex flex-col overflow-hidden rounded-xl border border-black/10 bg-white shadow-sm transition-all hover:shadow-md ${
-                !banner.isActive ? "opacity-60" : ""
-              }`}
-            >
-              {/* Live Banner Preview Image Container */}
-              <div style={{"position":"relative","width":"100%","overflow":"hidden","backgroundColor":"rgb(15,23,42)"}}>
-                <Image
-                  src={banner.src}
-                  alt={banner.alt || banner.title}
-                  fill
-                  style={{"objectFit":"cover","transitionProperty":"transform","transitionTimingFunction":"cubic-bezier(0.4, 0, 0.2, 1)","transitionDuration":"300ms","transform":"translate(0, 0) rotate(0) skewX(0) skewY(0) scaleX(1.05) scaleY(1.05)"}}
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+        }}>
+          {banners.map((banner, index) => {
+            const isTop = index === 0
+            const isHero = !banner.category || banner.category === "hero"
+            const placementLabel =
+              BANNER_TYPE_OPTIONS.find((t) => t.value === banner.category)?.label ||
+              (isHero ? "Hero Section Banner" : banner.category)
 
-                {/* Status Badges */}
-                <div style={{"position":"absolute","left":"0.75rem","top":"0.75rem","zIndex":"10","display":"flex","flexWrap":"wrap","gap":"0.375rem"}}>
-                  <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
-                      banner.isActive
-                        ? "bg-emerald-500/90 text-white backdrop-blur-xs"
-                        : "bg-neutral-800/90 text-neutral-300 backdrop-blur-xs"
-                    }`}
-                  >
-                    {banner.isActive ? <EyeIcon className="size-3" /> : <EyeOffIcon className="size-3" />}
-                    {banner.isActive ? "Active" : "Hidden"}
+            return (
+              <div
+                key={banner.id}
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  borderRadius: "0.875rem",
+                  border: isTop ? "2px solid #111827" : "1.5px solid #e5e7eb",
+                  backgroundColor: "#ffffff",
+                  boxShadow: isTop ? "0 4px 14px rgba(0, 0, 0, 0.08)" : "0 1px 3px rgba(0, 0, 0, 0.03)",
+                  opacity: banner.isActive ? 1 : 0.65,
+                  transition: "all 0.15s ease",
+                  overflow: "hidden",
+                }}
+              >
+                {/* 1. Left Reordering & Position Control Column */}
+                <div style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.375rem",
+                  padding: "1rem 0.875rem",
+                  backgroundColor: isTop ? "#f3f4f6" : "#f9fafb",
+                  borderRight: "1px solid #e5e7eb",
+                  minWidth: "100px",
+                  flexShrink: 0,
+                  boxSizing: "border-box",
+                }}>
+                  {/* Position Pill */}
+                  <span style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "0.25rem 0.625rem",
+                    borderRadius: "9999px",
+                    fontSize: "0.6875rem",
+                    fontWeight: 800,
+                    letterSpacing: "0.05em",
+                    lineHeight: 1,
+                    backgroundColor: isTop ? "#111827" : "#e5e7eb",
+                    color: isTop ? "#ffffff" : "#374151",
+                  }}>
+                    {isTop ? "★ #1 TOP" : `#${index + 1}`}
                   </span>
 
-                  {banner.category ? (
-                    <span style={{"borderRadius":"9999px","backgroundColor":"rgb(0,0,0,0.6)","paddingLeft":"0.625rem","paddingRight":"0.625rem","paddingTop":"0.125rem","paddingBottom":"0.125rem","fontSize":"11px","fontWeight":"500","color":"rgb(255,255,255)"}}>
-                      {banner.category}
-                    </span>
-                  ) : null}
-                </div>
-
-                <div style={{"position":"absolute","bottom":"0.75rem","right":"0.75rem","zIndex":"10","borderRadius":"0.375rem","backgroundColor":"rgb(0,0,0,0.7)","paddingLeft":"0.5rem","paddingRight":"0.5rem","paddingTop":"0.125rem","paddingBottom":"0.125rem","fontSize":"10px","fontWeight":"500","color":"rgb(255,255,255)"}}>
-                  Order: #{banner.sortOrder}
-                </div>
-              </div>
-
-              {/* Banner Details Body */}
-              <div style={{"display":"flex","flex":"1 1 0%","flexDirection":"column","padding":"1rem"}}>
-                <h3 style={{"overflow":"hidden","display":"-webkit-box","WebkitBoxOrient":"vertical","WebkitLineClamp":"1","fontSize":"0.875rem","lineHeight":"1.25rem","fontWeight":"700","color":"rgb(0,0,0)"}}>{banner.title}</h3>
-                {banner.caption ? (
-                  <p style={{"marginTop":"0.25rem","overflow":"hidden","display":"-webkit-box","WebkitBoxOrient":"vertical","WebkitLineClamp":"2","fontSize":"0.75rem","lineHeight":"1rem","color":"rgb(0,0,0,0.6)"}}>{banner.caption}</p>
-                ) : null}
-
-                <div style={{"marginTop":"0.75rem","display":"flex","alignItems":"center","justifyContent":"space-between","borderTopWidth":"1px","borderColor":"rgb(0,0,0,0.1)","paddingTop":"0.75rem","fontSize":"0.75rem","lineHeight":"1rem"}}>
-                  <span style={{"overflow":"hidden","textOverflow":"ellipsis","whiteSpace":"nowrap"}} title={banner.linkUrl || "/shop"}>
-                    CTA: <strong style={{"fontWeight":"600","color":"rgb(0,0,0)"}}>{banner.cta || "Shop now"}</strong>
-                  </span>
-
-                  {/* Actions */}
-                  <div style={{"display":"flex","flexShrink":"0","alignItems":"center","gap":"0.375rem"}}>
+                  {/* Up / Down Move Arrows */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.25rem", marginTop: "0.25rem" }}>
                     <button
                       type="button"
-                      onClick={() => handleToggleActive(banner)}
-                      title={banner.isActive ? "Deactivate banner" : "Activate banner"}
-                      style={{"borderRadius":"0.375rem","padding":"0.375rem","color":"rgb(0,0,0)","transitionProperty":"color, background-color, border-color, text-decoration-color, fill, stroke","transitionTimingFunction":"cubic-bezier(0.4, 0, 0.2, 1)","transitionDuration":"150ms","backgroundColor":"rgb(0,0,0,0.05)"}}
+                      disabled={index === 0}
+                      onClick={() => handleMoveUp(index)}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "28px",
+                        height: "28px",
+                        borderRadius: "0.375rem",
+                        border: "1px solid #d1d5db",
+                        backgroundColor: "#ffffff",
+                        color: index === 0 ? "#9ca3af" : "#111827",
+                        cursor: index === 0 ? "not-allowed" : "pointer",
+                        opacity: index === 0 ? 0.4 : 1,
+                      }}
+                      title="Move up"
                     >
-                      {banner.isActive ? <EyeOffIcon className="size-4" /> : <EyeIcon className="size-4" />}
+                      <ArrowUpIcon style={{ width: "14px", height: "14px" }} />
                     </button>
 
                     <button
                       type="button"
-                      onClick={() => openEditModal(banner)}
-                      title="Edit banner"
-                      style={{"borderRadius":"0.375rem","padding":"0.375rem","color":"rgb(0,0,0)","transitionProperty":"color, background-color, border-color, text-decoration-color, fill, stroke","transitionTimingFunction":"cubic-bezier(0.4, 0, 0.2, 1)","transitionDuration":"150ms","backgroundColor":"rgb(0,0,0,0.05)"}}
+                      disabled={index === banners.length - 1}
+                      onClick={() => handleMoveDown(index)}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "28px",
+                        height: "28px",
+                        borderRadius: "0.375rem",
+                        border: "1px solid #d1d5db",
+                        backgroundColor: "#ffffff",
+                        color: index === banners.length - 1 ? "#9ca3af" : "#111827",
+                        cursor: index === banners.length - 1 ? "not-allowed" : "pointer",
+                        opacity: index === banners.length - 1 ? 0.4 : 1,
+                      }}
+                      title="Move down"
                     >
-                      <PencilIcon className="size-4" />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setDeleteTargetId(banner.id)}
-                      title="Delete banner"
-                      style={{"borderRadius":"0.375rem","padding":"0.375rem","color":"rgb(220,38,38)","transitionProperty":"color, background-color, border-color, text-decoration-color, fill, stroke","transitionTimingFunction":"cubic-bezier(0.4, 0, 0.2, 1)","transitionDuration":"150ms","backgroundColor":"rgb(254,242,242)"}}
-                    >
-                      <Trash2Icon className="size-4" />
+                      <ArrowDownIcon style={{ width: "14px", height: "14px" }} />
                     </button>
                   </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
 
-      {/* Add / Edit Banner Modal */}
-      {isModalOpen ? (
-        <div style={{"position":"fixed","inset":"0px","zIndex":"50","display":"flex","alignItems":"center","justifyContent":"center","overflowY":"auto","backgroundColor":"rgb(0,0,0,0.5)","padding":"1rem"}}>
-          <div style={{"position":"relative","marginTop":"2rem","marginBottom":"2rem","width":"100%","maxWidth":"36rem","borderRadius":"1rem","borderWidth":"1px","borderColor":"rgb(0,0,0,0.1)","backgroundColor":"rgb(255,255,255)","padding":"1.5rem","boxShadow":"0 0 #0000, 0 0 #0000, 0 25px 50px -12px rgb(0,0,0,0.25)"}}>
-            <div style={{"display":"flex","alignItems":"center","justifyContent":"space-between","borderBottomWidth":"1px","borderColor":"rgb(0,0,0,0.1)","paddingBottom":"0.75rem"}}>
-              <h2 style={{"fontSize":"1rem","lineHeight":"1.5rem","fontWeight":"700","color":"rgb(0,0,0)"}}>
-                {editingBanner ? "Edit Hero Banner" : "Add New Hero Banner"}
-              </h2>
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                style={{"borderRadius":"0.375rem","padding":"0.25rem","color":"rgb(0,0,0)","backgroundColor":"rgb(0,0,0,0.05)"}}
-              >
-                <XIcon className="size-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} style={{"marginTop":"calc(1rem * calc(1 - 0))","marginBottom":"calc(1rem * 0)","fontSize":"0.75rem","lineHeight":"1rem"}}>
-              {/* Banner Title */}
-              <div>
-                <label style={{"display":"block","fontWeight":"600","color":"rgb(0,0,0,0.8)"}}>Banner Title *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Favior Techno Android Projector"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  style={{"marginTop":"0.25rem","width":"100%","borderRadius":"0.5rem","borderWidth":"1px","borderColor":"rgb(0,0,0)","paddingLeft":"0.75rem","paddingRight":"0.75rem","paddingTop":"0.5rem","paddingBottom":"0.5rem","fontSize":"0.75rem","lineHeight":"1rem","outline":"2px solid transparent","outlineOffset":"2px"}}
-                />
-              </div>
-
-              <div style={{"display":"grid","gridTemplateColumns":"repeat(2, minmax(0, 1fr))","gap":"0.75rem"}}>
-                {/* Category */}
-                <div>
-                  <label style={{"display":"block","fontWeight":"600","color":"rgb(0,0,0,0.8)"}}>Category</label>
+                  {/* Direct Position Dropdown */}
                   <select
-                    value={formData.category}
-                    onChange={(e) => {
-                      const selectedTitle = e.target.value
-                      const selectedCat = categories.find((c) => c.title === selectedTitle)
-                      setFormData({
-                        ...formData,
-                        category: selectedTitle,
-                        linkUrl: selectedCat ? `/shop?filter=${selectedCat.slug}` : "/shop",
-                      })
+                    value={index}
+                    onChange={(e) => handleSetPosition(banner.id, Number(e.target.value))}
+                    style={{
+                      marginTop: "0.25rem",
+                      fontSize: "0.6875rem",
+                      fontWeight: 600,
+                      padding: "0.2rem 0.375rem",
+                      borderRadius: "0.375rem",
+                      border: "1px solid #d1d5db",
+                      backgroundColor: "#ffffff",
+                      color: "#374151",
+                      cursor: "pointer",
+                      outline: "none",
                     }}
-                    style={{"marginTop":"0.25rem","width":"100%","borderRadius":"0.5rem","borderWidth":"1px","borderColor":"rgb(0,0,0)","backgroundColor":"rgb(255,255,255)","paddingLeft":"0.75rem","paddingRight":"0.75rem","paddingTop":"0.5rem","paddingBottom":"0.5rem","fontSize":"0.75rem","lineHeight":"1rem","outline":"2px solid transparent","outlineOffset":"2px"}}
+                    title="Change position"
                   >
-                    <option value="">Select a category</option>
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.title}>
-                        {cat.title}
+                    {banners.map((_, pIdx) => (
+                      <option key={pIdx} value={pIdx}>
+                        Pos #{pIdx + 1} {pIdx === 0 ? "(Top)" : ""}
                       </option>
                     ))}
                   </select>
                 </div>
 
-                {/* CTA Button Text */}
-                <div>
-                  <label style={{"display":"block","fontWeight":"600","color":"rgb(0,0,0,0.8)"}}>CTA Button Text</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Shop now, Explore now"
-                    value={formData.cta}
-                    onChange={(e) => setFormData({ ...formData, cta: e.target.value })}
-                    style={{"marginTop":"0.25rem","width":"100%","borderRadius":"0.5rem","borderWidth":"1px","borderColor":"rgb(0,0,0)","paddingLeft":"0.75rem","paddingRight":"0.75rem","paddingTop":"0.5rem","paddingBottom":"0.5rem","fontSize":"0.75rem","lineHeight":"1rem","outline":"2px solid transparent","outlineOffset":"2px"}}
+                {/* 2. Banner Thumbnail Preview */}
+                <div style={{
+                  position: "relative",
+                  width: "220px",
+                  height: "130px",
+                  overflow: "hidden",
+                  backgroundColor: "#09090b",
+                  flexShrink: 0,
+                }}>
+                  <Image
+                    src={banner.src}
+                    alt={banner.alt || banner.title}
+                    fill
+                    style={{ objectFit: "contain", padding: "0.5rem" }}
+                    sizes="220px"
                   />
-                </div>
-              </div>
 
-              {/* Caption */}
-              <div>
-                <label style={{"display":"block","fontWeight":"600","color":"rgb(0,0,0,0.8)"}}>Subtitle / Caption</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Projection Made Simple • Full HD 1080p"
-                  value={formData.caption}
-                  onChange={(e) => setFormData({ ...formData, caption: e.target.value })}
-                  style={{"marginTop":"0.25rem","width":"100%","borderRadius":"0.5rem","borderWidth":"1px","borderColor":"rgb(0,0,0)","paddingLeft":"0.75rem","paddingRight":"0.75rem","paddingTop":"0.5rem","paddingBottom":"0.5rem","fontSize":"0.75rem","lineHeight":"1rem","outline":"2px solid transparent","outlineOffset":"2px"}}
-                />
-              </div>
-
-              {/* Desktop Image Upload or URL */}
-              <div>
-                <label style={{"display":"block","fontWeight":"600","color":"rgb(0,0,0,0.8)"}}>Desktop Image (URL or Upload) *</label>
-                <div style={{"marginTop":"0.25rem","display":"flex","alignItems":"center","gap":"0.5rem"}}>
-                  <input
-                    type="text"
-                    required
-                    placeholder="/hero-banner-techno-projector.png or https://..."
-                    value={formData.src}
-                    onChange={(e) => setFormData({ ...formData, src: e.target.value })}
-                    style={{"width":"100%","borderRadius":"0.5rem","borderWidth":"1px","borderColor":"rgb(0,0,0)","paddingLeft":"0.75rem","paddingRight":"0.75rem","paddingTop":"0.5rem","paddingBottom":"0.5rem","fontSize":"0.75rem","lineHeight":"1rem","outline":"2px solid transparent","outlineOffset":"2px"}}
-                  />
-                  <label style={{"display":"inline-flex","flexShrink":"0","cursor":"pointer","alignItems":"center","gap":"0.375rem","borderRadius":"0.5rem","borderWidth":"1px","borderColor":"rgb(0,0,0,0.2)","backgroundColor":"rgb(229,229,229)","paddingLeft":"0.75rem","paddingRight":"0.75rem","paddingTop":"0.5rem","paddingBottom":"0.5rem","fontSize":"0.75rem","lineHeight":"1rem","fontWeight":"600","color":"rgb(0,0,0)","transitionProperty":"color, background-color, border-color, text-decoration-color, fill, stroke","transitionTimingFunction":"cubic-bezier(0.4, 0, 0.2, 1)","transitionDuration":"150ms"}}>
-                    {isUploadingDesktop ? <Loader2Icon style={{"animation":"spin 1s linear infinite"}} /> : <UploadIcon className="size-3.5" />}
-                    Upload
-                    <input type="file" accept="image/*" style={{"display":"none"}} onChange={handleDesktopFileUpload} />
-                  </label>
-                </div>
-                {formData.src ? (
-                  <div style={{"position":"relative","marginTop":"0.5rem","height":"6rem","width":"100%","overflow":"hidden","borderRadius":"0.5rem","borderWidth":"1px","borderColor":"rgb(0,0,0,0.1)","backgroundColor":"rgb(15,23,42)"}}>
-                    <Image src={formData.src} alt="Desktop Preview" fill style={{"objectFit":"cover"}} />
+                  {/* Thumbnail Status Pill */}
+                  <div style={{
+                    position: "absolute",
+                    left: "0.5rem",
+                    top: "0.5rem",
+                    zIndex: 10,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.375rem",
+                  }}>
+                    <span className="admin-pill-badge" style={{
+                      backgroundColor: banner.isActive ? "#059669" : "#374151",
+                      color: "#ffffff",
+                      fontSize: "10px",
+                      height: "22px",
+                      padding: "0 0.5rem",
+                    }}>
+                      {banner.isActive ? <EyeIcon style={{ width: "10px", height: "10px" }} /> : <EyeOffIcon style={{ width: "10px", height: "10px" }} />}
+                      <span>{banner.isActive ? "ACTIVE" : "HIDDEN"}</span>
+                    </span>
                   </div>
-                ) : null}
-              </div>
 
-              {/* Mobile Image Upload or URL */}
-              <div>
-                <label style={{"display":"block","fontWeight":"600","color":"rgb(0,0,0,0.8)"}}>Mobile Image (Optional)</label>
-                <div style={{"marginTop":"0.25rem","display":"flex","alignItems":"center","gap":"0.5rem"}}>
-                  <input
-                    type="text"
-                    placeholder="Optional mobile image path or URL"
-                    value={formData.mobileSrc}
-                    onChange={(e) => setFormData({ ...formData, mobileSrc: e.target.value })}
-                    style={{"width":"100%","borderRadius":"0.5rem","borderWidth":"1px","borderColor":"rgb(0,0,0)","paddingLeft":"0.75rem","paddingRight":"0.75rem","paddingTop":"0.5rem","paddingBottom":"0.5rem","fontSize":"0.75rem","lineHeight":"1rem","outline":"2px solid transparent","outlineOffset":"2px"}}
-                  />
-                  <label style={{"display":"inline-flex","flexShrink":"0","cursor":"pointer","alignItems":"center","gap":"0.375rem","borderRadius":"0.5rem","borderWidth":"1px","borderColor":"rgb(0,0,0,0.2)","backgroundColor":"rgb(229,229,229)","paddingLeft":"0.75rem","paddingRight":"0.75rem","paddingTop":"0.5rem","paddingBottom":"0.5rem","fontSize":"0.75rem","lineHeight":"1rem","fontWeight":"600","color":"rgb(0,0,0)","transitionProperty":"color, background-color, border-color, text-decoration-color, fill, stroke","transitionTimingFunction":"cubic-bezier(0.4, 0, 0.2, 1)","transitionDuration":"150ms"}}>
-                    {isUploadingMobile ? <Loader2Icon style={{"animation":"spin 1s linear infinite"}} /> : <UploadIcon className="size-3.5" />}
-                    Upload
-                    <input type="file" accept="image/*" style={{"display":"none"}} onChange={handleMobileFileUpload} />
-                  </label>
+                  <div style={{
+                    position: "absolute",
+                    bottom: "0.5rem",
+                    right: "0.5rem",
+                    zIndex: 10,
+                  }}>
+                    <span className="admin-pill-badge" style={{
+                      backgroundColor: "rgba(0, 0, 0, 0.75)",
+                      color: "#ffffff",
+                      fontSize: "10px",
+                      height: "22px",
+                      padding: "0 0.5rem",
+                    }}>
+                      {isHero
+                        ? "Hero Slider"
+                        : banner.category === "split_duffle"
+                        ? "Split Banner 1 (Duffle)"
+                        : banner.category === "split_shaker"
+                        ? "Split Banner 2 (Shaker)"
+                        : banner.category}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 3. Middle Content & Information */}
+                <div style={{
+                  display: "flex",
+                  flex: "1 1 300px",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  padding: "1rem 1.25rem",
+                  minWidth: 0,
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <span style={{
+                      fontSize: "0.6875rem",
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      color: "#9ca3af",
+                      lineHeight: 1,
+                    }}>
+                      {placementLabel}
+                    </span>
+                    {isTop && (
+                      <span style={{
+                        borderRadius: "9999px",
+                        backgroundColor: "#fef3c7",
+                        border: "1px solid #fde68a",
+                        color: "#92400e",
+                        fontSize: "10px",
+                        fontWeight: 700,
+                        padding: "0.1rem 0.5rem",
+                        lineHeight: 1.2,
+                      }}>
+                        Current #1 Top Banner
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 style={{
+                    margin: "0.25rem 0 0 0",
+                    fontSize: "1rem",
+                    fontWeight: 700,
+                    color: "#111827",
+                    lineHeight: 1.3,
+                  }}>
+                    {banner.title}
+                  </h3>
+
+                  {banner.caption && (
+                    <p style={{
+                      margin: "0.25rem 0 0 0",
+                      fontSize: "0.8125rem",
+                      color: "#4b5563",
+                      lineHeight: 1.4,
+                    }}>
+                      {banner.caption}
+                    </p>
+                  )}
+
+                  {/* CTA & Link row */}
+                  <div style={{
+                    marginTop: "0.625rem",
+                    display: "flex",
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                    gap: "1rem",
+                    fontSize: "0.75rem",
+                  }}>
+                    <div>
+                      <span style={{ color: "#6b7280" }}>Button CTA: </span>
+                      <strong style={{ color: "#111827" }}>{banner.cta || "EXPLORE COLLECTION"}</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: "#6b7280" }}>Link: </span>
+                      <span style={{ fontFamily: "monospace", fontSize: "0.75rem", color: "#374151" }} title={banner.linkUrl || "/all-products"}>
+                        {banner.linkUrl || "/all-products"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. Right Action Buttons */}
+                <div style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  gap: "0.625rem",
+                  padding: "1rem 1.25rem",
+                  borderLeft: "1px solid #f3f4f6",
+                  flexShrink: 0,
+                }}>
+                  {/* Quick "Set to Top" Action Button */}
+                  {!isTop ? (
+                    <button
+                      type="button"
+                      onClick={() => handleMoveToTop(banner.id)}
+                      className="admin-btn admin-btn-secondary"
+                      style={{
+                        height: "36px",
+                        minHeight: "36px",
+                        padding: "0 0.875rem",
+                        fontSize: "12px",
+                        borderColor: "#111827",
+                        color: "#111827",
+                      }}
+                      title="Move this banner to the very top (#1)"
+                    >
+                      <ChevronsUpIcon style={{ width: "14px", height: "14px" }} />
+                      <span>Set to Top</span>
+                    </button>
+                  ) : null}
+
+                  {/* Toggle Active / Hide */}
+                  <button
+                    type="button"
+                    onClick={() => handleToggleActive(banner)}
+                    className="admin-btn admin-btn-secondary"
+                    style={{
+                      height: "36px",
+                      minHeight: "36px",
+                      padding: "0 0.875rem",
+                      fontSize: "12px",
+                      color: banner.isActive ? "#374151" : "#047857",
+                      backgroundColor: banner.isActive ? "#ffffff" : "#ecfdf5",
+                      borderColor: banner.isActive ? "#d1d5db" : "#a7f3d0",
+                    }}
+                  >
+                    {banner.isActive ? (
+                      <>
+                        <EyeOffIcon style={{ width: "13px", height: "13px" }} />
+                        <span>Hide</span>
+                      </>
+                    ) : (
+                      <>
+                        <EyeIcon style={{ width: "13px", height: "13px" }} />
+                        <span>Activate</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Edit Banner Button */}
+                  <button
+                    type="button"
+                    onClick={() => openEditModal(banner)}
+                    className="admin-btn admin-btn-primary"
+                    style={{ height: "36px", minHeight: "36px", padding: "0 1rem", fontSize: "12px" }}
+                  >
+                    <PencilIcon style={{ width: "13px", height: "13px" }} />
+                    <span>Edit</span>
+                  </button>
+
+                  {/* Delete Button */}
+                  <button
+                    type="button"
+                    onClick={() => setDeleteTargetId(banner.id)}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: "36px",
+                      width: "36px",
+                      minHeight: "36px",
+                      minWidth: "36px",
+                      borderRadius: "0.5rem",
+                      border: "1px solid #fecaca",
+                      backgroundColor: "#fef2f2",
+                      color: "#dc2626",
+                      cursor: "pointer",
+                      boxSizing: "border-box",
+                    }}
+                    title="Delete banner"
+                  >
+                    <Trash2Icon style={{ width: "14px", height: "14px" }} />
+                  </button>
                 </div>
               </div>
+            )
+          })}
+        </div>
+      )}
 
-              <div style={{"display":"grid","gridTemplateColumns":"repeat(2, minmax(0, 1fr))","gap":"0.75rem"}}>
-                {/* Link URL */}
+      {/* Spacious 2-Column Add / Edit Banner Modal */}
+      {isModalOpen && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 100,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "rgba(0, 0, 0, 0.65)",
+          backdropFilter: "blur(4px)",
+          padding: "1.25rem",
+        }}>
+          <div style={{
+            position: "relative",
+            width: "100%",
+            maxWidth: "1120px",
+            maxHeight: "92vh",
+            display: "flex",
+            flexDirection: "column",
+            backgroundColor: "#ffffff",
+            borderRadius: "1rem",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.35)",
+            border: "1px solid #e5e7eb",
+            overflow: "hidden",
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "1.25rem 1.75rem",
+              borderBottom: "1px solid #e5e7eb",
+              backgroundColor: "#ffffff",
+              flexShrink: 0,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.875rem" }}>
+                <div style={{
+                  width: "2.5rem",
+                  height: "2.5rem",
+                  borderRadius: "0.5rem",
+                  backgroundColor: "#111827",
+                  color: "#ffffff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}>
+                  <LayersIcon style={{ width: "1.25rem", height: "1.25rem" }} />
+                </div>
                 <div>
-                  <label style={{"display":"block","fontWeight":"600","color":"rgb(0,0,0,0.8)"}}>Link Target URL</label>
-                  <input
-                    type="text"
-                    placeholder="/shop or /product/techno-projector"
-                    value={formData.linkUrl}
-                    onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
-                    style={{"marginTop":"0.25rem","width":"100%","borderRadius":"0.5rem","borderWidth":"1px","borderColor":"rgb(0,0,0)","paddingLeft":"0.75rem","paddingRight":"0.75rem","paddingTop":"0.5rem","paddingBottom":"0.5rem","fontSize":"0.75rem","lineHeight":"1rem","outline":"2px solid transparent","outlineOffset":"2px"}}
-                  />
+                  <h2 style={{ fontSize: "1.125rem", fontWeight: 700, color: "#111827", margin: 0, lineHeight: 1.3 }}>
+                    {editingBanner ? "Edit Banner Information & Image" : "Add New Banner"}
+                  </h2>
+                  <p style={{ fontSize: "0.8125rem", color: "#6b7280", margin: "0.25rem 0 0 0" }}>
+                    Configure banner placement, headline tagline, subtitle description, CTA button, and upload images.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "2.25rem",
+                  height: "2.25rem",
+                  borderRadius: "0.5rem",
+                  border: "1px solid #e5e7eb",
+                  backgroundColor: "#f9fafb",
+                  color: "#6b7280",
+                  cursor: "pointer",
+                }}
+              >
+                <XIcon style={{ width: "1.125rem", height: "1.125rem" }} />
+              </button>
+            </div>
+
+            {/* Modal Body (Scrollable 2-Column Layout) */}
+            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+              <div style={{
+                flex: 1,
+                overflowY: "auto",
+                padding: "1.75rem",
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))",
+                gap: "2.25rem",
+              }}>
+                {/* LEFT COLUMN: Content & Text Fields */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", paddingBottom: "0.5rem", borderBottom: "1px solid #f3f4f6" }}>
+                    <span style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#9ca3af" }}>
+                      1. Placement & Content Information
+                    </span>
+                  </div>
+
+                  {/* Banner Placement */}
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#1f2937", marginBottom: "0.375rem" }}>
+                      Banner Placement / Type <span style={{ color: "#ef4444" }}>*</span>
+                    </label>
+                    <select
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      style={{
+                        width: "100%",
+                        padding: "0.625rem 0.875rem",
+                        borderRadius: "0.5rem",
+                        border: "1px solid #d1d5db",
+                        backgroundColor: "#ffffff",
+                        fontSize: "0.875rem",
+                        color: "#111827",
+                        outline: "none",
+                        cursor: "pointer",
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      {BANNER_TYPE_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                    <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.75rem", color: "#6b7280" }}>
+                      Choose &apos;Hero Section Banner&apos; for the main homepage top slider.
+                    </p>
+                  </div>
+
+                  {/* Title / Main Tagline */}
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#1f2937", marginBottom: "0.375rem" }}>
+                      Banner Title / Main Tagline <span style={{ color: "#ef4444" }}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. PREMIUM FITNESS ESSENTIALS"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      style={{
+                        width: "100%",
+                        padding: "0.625rem 0.875rem",
+                        borderRadius: "0.5rem",
+                        border: "1px solid #d1d5db",
+                        fontSize: "0.875rem",
+                        fontWeight: 600,
+                        color: "#111827",
+                        outline: "none",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                    <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.75rem", color: "#6b7280" }}>
+                      In Hero section, this is displayed as the primary bold uppercase headline.
+                    </p>
+                  </div>
+
+                  {/* Subheadline / Caption */}
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#1f2937", marginBottom: "0.375rem" }}>
+                      Subheadline / Description
+                    </label>
+                    <textarea
+                      rows={3}
+                      placeholder="e.g. Crafted for performance. Designed for you."
+                      value={formData.caption}
+                      onChange={(e) => setFormData({ ...formData, caption: e.target.value })}
+                      style={{
+                        width: "100%",
+                        padding: "0.625rem 0.875rem",
+                        borderRadius: "0.5rem",
+                        border: "1px solid #d1d5db",
+                        fontSize: "0.875rem",
+                        color: "#111827",
+                        outline: "none",
+                        boxSizing: "border-box",
+                        resize: "vertical",
+                      }}
+                    />
+                    <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.75rem", color: "#6b7280" }}>
+                      Short supporting sentence displayed below the main headline.
+                    </p>
+                  </div>
+
+                  {/* Button Text & Target Link */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#1f2937", marginBottom: "0.375rem" }}>
+                        Primary Button Text
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. EXPLORE COLLECTION"
+                        value={formData.cta}
+                        onChange={(e) => setFormData({ ...formData, cta: e.target.value })}
+                        style={{
+                          width: "100%",
+                          padding: "0.625rem 0.875rem",
+                          borderRadius: "0.5rem",
+                          border: "1px solid #d1d5db",
+                          fontSize: "0.875rem",
+                          color: "#111827",
+                          outline: "none",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#1f2937", marginBottom: "0.375rem" }}>
+                        Target Link URL
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="/all-products or /shop?filter=..."
+                        value={formData.linkUrl}
+                        onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
+                        style={{
+                          width: "100%",
+                          padding: "0.625rem 0.875rem",
+                          borderRadius: "0.5rem",
+                          border: "1px solid #d1d5db",
+                          fontFamily: "monospace",
+                          fontSize: "0.8125rem",
+                          color: "#111827",
+                          outline: "none",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Display Order & Accessibility Alt */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: "1rem" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#1f2937", marginBottom: "0.375rem" }}>
+                        Display Order (Rank)
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.sortOrder}
+                        onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value, 10) || 0 })}
+                        style={{
+                          width: "100%",
+                          padding: "0.625rem 0.875rem",
+                          borderRadius: "0.5rem",
+                          border: "1px solid #d1d5db",
+                          fontSize: "0.875rem",
+                          color: "#111827",
+                          outline: "none",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#1f2937", marginBottom: "0.375rem" }}>
+                        Image Alt (SEO)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Favior Fitness Essentials"
+                        value={formData.alt}
+                        onChange={(e) => setFormData({ ...formData, alt: e.target.value })}
+                        style={{
+                          width: "100%",
+                          padding: "0.625rem 0.875rem",
+                          borderRadius: "0.5rem",
+                          border: "1px solid #d1d5db",
+                          fontSize: "0.875rem",
+                          color: "#111827",
+                          outline: "none",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Active Status Card */}
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.75rem",
+                    padding: "0.875rem 1rem",
+                    borderRadius: "0.625rem",
+                    border: "1px solid #e5e7eb",
+                    backgroundColor: formData.isActive ? "#f0fdf4" : "#f9fafb",
+                    transition: "all 0.15s",
+                  }}>
+                    <input
+                      type="checkbox"
+                      id="isActiveToggle"
+                      checked={formData.isActive}
+                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                      style={{
+                        width: "1.125rem",
+                        height: "1.125rem",
+                        cursor: "pointer",
+                        accentColor: "#111827",
+                      }}
+                    />
+                    <label htmlFor="isActiveToggle" style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#111827", cursor: "pointer", userSelect: "none" }}>
+                      Publish banner to live website ({formData.isActive ? "Active / Visible" : "Hidden / Draft"})
+                    </label>
+                  </div>
                 </div>
 
-                {/* Sort Order */}
-                <div>
-                  <label style={{"display":"block","fontWeight":"600","color":"rgb(0,0,0,0.8)"}}>Display Order</label>
-                  <input
-                    type="number"
-                    value={formData.sortOrder}
-                    onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value, 10) || 0 })}
-                    style={{"marginTop":"0.25rem","width":"100%","borderRadius":"0.5rem","borderWidth":"1px","borderColor":"rgb(0,0,0)","paddingLeft":"0.75rem","paddingRight":"0.75rem","paddingTop":"0.5rem","paddingBottom":"0.5rem","fontSize":"0.75rem","lineHeight":"1rem","outline":"2px solid transparent","outlineOffset":"2px"}}
-                  />
+                {/* RIGHT COLUMN: Media Upload & Live Visual Preview */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", paddingBottom: "0.5rem", borderBottom: "1px solid #f3f4f6" }}>
+                    <span style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#9ca3af" }}>
+                      2. Visual Media & Real-Time Preview
+                    </span>
+                  </div>
+
+                  {/* Desktop Image */}
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#1f2937", marginBottom: "0.375rem" }}>
+                      Desktop Banner Image <span style={{ color: "#ef4444" }}>*</span>
+                    </label>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <input
+                        type="text"
+                        required
+                        placeholder="/IMG_5576.PNG or https://..."
+                        value={formData.src}
+                        onChange={(e) => setFormData({ ...formData, src: e.target.value })}
+                        style={{
+                          flex: 1,
+                          padding: "0.625rem 0.875rem",
+                          borderRadius: "0.5rem",
+                          border: "1px solid #d1d5db",
+                          fontFamily: "monospace",
+                          fontSize: "0.8125rem",
+                          color: "#111827",
+                          outline: "none",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                      <label className="admin-btn admin-btn-primary" style={{ height: "40px", minHeight: "40px" }}>
+                        {isUploadingDesktop ? (
+                          <Loader2Icon style={{ width: "1rem", height: "1rem", animation: "spin 1s linear infinite" }} />
+                        ) : (
+                          <UploadIcon style={{ width: "1rem", height: "1rem" }} />
+                        )}
+                        <span>Upload Image</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: "none" }}
+                          onChange={handleDesktopFileUpload}
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Live Preview Box */}
+                  <div style={{
+                    position: "relative",
+                    width: "100%",
+                    aspectRatio: "16 / 9",
+                    borderRadius: "0.75rem",
+                    border: "1px solid #e5e7eb",
+                    backgroundColor: "#09090b",
+                    overflow: "hidden",
+                    boxShadow: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)",
+                  }}>
+                    {formData.src ? (
+                      <>
+                        <Image
+                          src={formData.src}
+                          alt="Desktop Preview"
+                          fill
+                          style={{ objectFit: "contain", padding: "0.5rem" }}
+                          sizes="(max-width: 1024px) 100vw, 500px"
+                        />
+                        <div style={{
+                          position: "absolute",
+                          bottom: "0.75rem",
+                          left: "0.75rem",
+                          borderRadius: "0.375rem",
+                          backgroundColor: "rgba(0, 0, 0, 0.75)",
+                          backdropFilter: "blur(4px)",
+                          padding: "0.25rem 0.625rem",
+                          fontSize: "0.6875rem",
+                          fontWeight: 600,
+                          color: "#ffffff",
+                          letterSpacing: "0.025em",
+                        }}>
+                          Desktop Live Preview
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", color: "#9ca3af" }}>
+                        <ImageIcon style={{ width: "2.5rem", height: "2.5rem", opacity: 0.5 }} />
+                        <span style={{ marginTop: "0.5rem", fontSize: "0.75rem" }}>No image selected</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Mobile Image (Optional) */}
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#1f2937", marginBottom: "0.375rem" }}>
+                      Mobile Banner Image (Optional)
+                    </label>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <input
+                        type="text"
+                        placeholder="Optional mobile image path or URL"
+                        value={formData.mobileSrc}
+                        onChange={(e) => setFormData({ ...formData, mobileSrc: e.target.value })}
+                        style={{
+                          flex: 1,
+                          padding: "0.625rem 0.875rem",
+                          borderRadius: "0.5rem",
+                          border: "1px solid #d1d5db",
+                          fontFamily: "monospace",
+                          fontSize: "0.8125rem",
+                          color: "#111827",
+                          outline: "none",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                      <label className="admin-btn admin-btn-secondary" style={{ height: "40px", minHeight: "40px" }}>
+                        {isUploadingMobile ? (
+                          <Loader2Icon style={{ width: "1rem", height: "1rem", animation: "spin 1s linear infinite" }} />
+                        ) : (
+                          <UploadIcon style={{ width: "1rem", height: "1rem" }} />
+                        )}
+                        <span>Upload Mobile</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: "none" }}
+                          onChange={handleMobileFileUpload}
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Live Hero Simulation Card */}
+                  <div style={{
+                    borderRadius: "0.75rem",
+                    border: "1px solid #e5e7eb",
+                    backgroundColor: "#f9fafb",
+                    padding: "1rem",
+                  }}>
+                    <span style={{ fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#6b7280", display: "block", marginBottom: "0.5rem" }}>
+                      Live Storefront Simulation
+                    </span>
+                    <div style={{
+                      backgroundColor: "#ffffff",
+                      borderRadius: "0.5rem",
+                      border: "1px solid #e5e7eb",
+                      padding: "0.875rem 1rem",
+                      boxShadow: "0 1px 2px 0 rgba(0,0,0,0.05)"
+                    }}>
+                      <div style={{ fontSize: "0.8125rem", fontWeight: 800, letterSpacing: "-0.02em", color: "#000" }}>favior.</div>
+                      <div style={{ marginTop: "0.375rem", fontSize: "0.8125rem", fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase", color: "#111827" }}>
+                        {formData.title || "PREMIUM FITNESS ESSENTIALS"}
+                      </div>
+                      <div style={{ marginTop: "0.25rem", fontSize: "0.75rem", color: "#6b7280" }}>
+                        {formData.caption || "Crafted for performance. Designed for you."}
+                      </div>
+                      <div style={{ marginTop: "0.625rem", display: "flex", gap: "0.5rem" }}>
+                        <span style={{
+                          display: "inline-block",
+                          backgroundColor: "#000000",
+                          color: "#ffffff",
+                          fontSize: "0.6875rem",
+                          fontWeight: 700,
+                          letterSpacing: "0.05em",
+                          textTransform: "uppercase",
+                          padding: "0.25rem 0.625rem",
+                          borderRadius: "0.25rem",
+                        }}>
+                          {formData.cta || "EXPLORE COLLECTION"}
+                        </span>
+                        <span style={{
+                          display: "inline-block",
+                          border: "1px solid #d1d5db",
+                          color: "#374151",
+                          fontSize: "0.6875rem",
+                          fontWeight: 700,
+                          letterSpacing: "0.05em",
+                          textTransform: "uppercase",
+                          padding: "0.25rem 0.625rem",
+                          borderRadius: "0.25rem",
+                        }}>
+                          SHOP NOW
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Is Active Toggle */}
-              <div style={{"display":"flex","alignItems":"center","gap":"0.5rem","paddingTop":"0.25rem"}}>
-                <input
-                  type="checkbox"
-                  id="isActiveToggle"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  style={{"borderRadius":"0.25rem","accentColor":"#000"}}
-                />
-                <label htmlFor="isActiveToggle" style={{"cursor":"pointer","userSelect":"none","fontWeight":"600","color":"rgb(0,0,0,0.8)"}}>
-                  Display this banner on homepage
-                </label>
-              </div>
-
-              {/* Form Buttons */}
-              <div style={{"display":"flex","alignItems":"center","justifyContent":"flex-end","gap":"0.5rem","borderTopWidth":"1px","borderColor":"rgb(0,0,0,0.1)","paddingTop":"1rem"}}>
+              {/* Modal Footer */}
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                gap: "0.75rem",
+                padding: "1rem 1.75rem",
+                borderTop: "1px solid #e5e7eb",
+                backgroundColor: "#f9fafb",
+                flexShrink: 0,
+              }}>
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  style={{"borderRadius":"0.5rem","borderWidth":"1px","borderColor":"rgb(0,0,0,0.2)","paddingLeft":"1rem","paddingRight":"1rem","paddingTop":"0.5rem","paddingBottom":"0.5rem","fontSize":"0.75rem","lineHeight":"1rem","fontWeight":"600","color":"rgb(0,0,0)","backgroundColor":"rgb(0,0,0,0.05)"}}
+                  className="admin-btn admin-btn-secondary"
+                  style={{ height: "42px", minHeight: "42px", padding: "0 1.5rem" }}
                 >
                   Cancel
                 </button>
@@ -571,30 +1360,52 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  style={{"display":"inline-flex","alignItems":"center","gap":"0.375rem","borderRadius":"0.5rem","backgroundColor":"rgb(0,0,0,0.8)","paddingLeft":"1rem","paddingRight":"1rem","paddingTop":"0.5rem","paddingBottom":"0.5rem","fontSize":"0.75rem","lineHeight":"1rem","fontWeight":"600","color":"rgb(255,255,255)","transitionProperty":"color, background-color, border-color, text-decoration-color, fill, stroke","transitionTimingFunction":"cubic-bezier(0.4, 0, 0.2, 1)","transitionDuration":"150ms","opacity":"0.5"}}
+                  className="admin-btn admin-btn-primary"
+                  style={{ height: "42px", minHeight: "42px", padding: "0 1.75rem" }}
                 >
-                  {isSubmitting ? <Loader2Icon style={{"animation":"spin 1s linear infinite"}} /> : null}
-                  {editingBanner ? "Save Changes" : "Create Banner"}
+                  {isSubmitting && (
+                    <Loader2Icon style={{ width: "1rem", height: "1rem", animation: "spin 1s linear infinite" }} />
+                  )}
+                  <span>{editingBanner ? "Save Changes" : "Create Banner"}</span>
                 </button>
               </div>
             </form>
           </div>
         </div>
-      ) : null}
+      )}
 
       {/* Delete Confirmation Modal */}
-      {deleteTargetId ? (
-        <div style={{"position":"fixed","inset":"0px","zIndex":"50","display":"flex","alignItems":"center","justifyContent":"center","backgroundColor":"rgb(0,0,0,0.5)","padding":"1rem"}}>
-          <div style={{"width":"100%","maxWidth":"24rem","borderRadius":"0.75rem","borderWidth":"1px","borderColor":"rgb(0,0,0,0.1)","backgroundColor":"rgb(255,255,255)","padding":"1.25rem","boxShadow":"0 0 #0000, 0 0 #0000, 0 25px 50px -12px rgb(0,0,0,0.25)"}}>
-            <h3 style={{"fontSize":"0.875rem","lineHeight":"1.25rem","fontWeight":"700","color":"rgb(0,0,0)"}}>Delete Banner?</h3>
-            <p style={{"marginTop":"0.25rem","fontSize":"0.75rem","lineHeight":"1rem","color":"rgb(0,0,0,0.6)"}}>
-              Are you sure you want to delete this hero banner? This action cannot be undone.
+      {deleteTargetId && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 100,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "rgba(0, 0, 0, 0.65)",
+          backdropFilter: "blur(4px)",
+          padding: "1rem",
+        }}>
+          <div style={{
+            width: "100%",
+            maxWidth: "24rem",
+            borderRadius: "0.75rem",
+            border: "1px solid #e5e7eb",
+            backgroundColor: "#ffffff",
+            padding: "1.25rem",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+          }}>
+            <h3 style={{ fontSize: "0.9375rem", fontWeight: 700, color: "#111827", margin: 0 }}>Delete Banner?</h3>
+            <p style={{ marginTop: "0.375rem", fontSize: "0.8125rem", color: "#6b7280" }}>
+              Are you sure you want to delete this banner? It will be permanently removed from the website and dashboard.
             </p>
-            <div style={{"marginTop":"1rem","display":"flex","justifyContent":"flex-end","gap":"0.5rem","fontSize":"0.75rem","lineHeight":"1rem"}}>
+            <div style={{ marginTop: "1.25rem", display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
               <button
                 type="button"
                 onClick={() => setDeleteTargetId(null)}
-                style={{"borderRadius":"0.375rem","borderWidth":"1px","borderColor":"rgb(0,0,0,0.2)","paddingLeft":"0.75rem","paddingRight":"0.75rem","paddingTop":"0.375rem","paddingBottom":"0.375rem","fontWeight":"500","color":"rgb(0,0,0)","backgroundColor":"rgb(0,0,0,0.05)"}}
+                className="admin-btn admin-btn-secondary"
+                style={{ height: "36px", minHeight: "36px", padding: "0 1rem", fontSize: "12px" }}
               >
                 Cancel
               </button>
@@ -602,15 +1413,32 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
                 type="button"
                 disabled={isSubmitting}
                 onClick={() => handleDelete(deleteTargetId)}
-                style={{"display":"inline-flex","alignItems":"center","gap":"0.375rem","borderRadius":"0.375rem","backgroundColor":"rgb(185,28,28)","paddingLeft":"0.75rem","paddingRight":"0.75rem","paddingTop":"0.375rem","paddingBottom":"0.375rem","fontWeight":"600","color":"rgb(255,255,255)","opacity":"0.5"}}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.375rem",
+                  borderRadius: "0.5rem",
+                  backgroundColor: "#dc2626",
+                  height: "36px",
+                  minHeight: "36px",
+                  padding: "0 1.25rem",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  color: "#ffffff",
+                  border: "none",
+                  cursor: isSubmitting ? "not-allowed" : "pointer",
+                  boxSizing: "border-box",
+                  lineHeight: 1,
+                }}
               >
-                {isSubmitting ? <Loader2Icon style={{"animation":"spin 1s linear infinite"}} /> : null}
-                Delete
+                {isSubmitting && <Loader2Icon style={{ width: "0.875rem", height: "0.875rem", animation: "spin 1s linear infinite" }} />}
+                <span>Delete</span>
               </button>
             </div>
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   )
 }

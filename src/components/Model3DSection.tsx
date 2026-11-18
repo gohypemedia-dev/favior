@@ -5,18 +5,27 @@ import { useRouter } from "next/navigation";
 import Model3D from "@/components/Model3D";
 import { Check } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import type { ThreeDShakerData } from "@/lib/server/controllers/three-d-shaker.controller";
 
-const SHAKER_VARIANTS = [
+const FALLBACK_VARIANTS = [
   { name: "300ml", price: "599", desc: "Pro Series • 300ml" },
   { name: "750ml", price: "1,499", desc: "Pro Series • 750ml" }
 ];
 
-export default function Model3DSection() {
+export default function Model3DSection({ data }: { data?: ThreeDShakerData | null }) {
   const router = useRouter();
   const { addToCart, openCart } = useCart();
-  const [localVariant, setLocalVariant] = useState(SHAKER_VARIANTS[0]); // Default 300ml
-  const [added, setAdded] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [added, setAdded] = useState(false);
+
+  const variants = data?.variants && data.variants.length > 0 ? data.variants : FALLBACK_VARIANTS;
+  const [localVariant, setLocalVariant] = useState(variants[0]);
+
+  useEffect(() => {
+    if (variants.length > 0) {
+      setLocalVariant(variants[0]);
+    }
+  }, [data]);
 
   useEffect(() => {
     const checkDesktop = () => setIsDesktop(window.innerWidth >= 1024);
@@ -25,15 +34,33 @@ export default function Model3DSection() {
     return () => window.removeEventListener("resize", checkDesktop);
   }, []);
 
+  if (data && data.isActive === false) {
+    return null;
+  }
+
+  const modelSrc = data?.modelSrc || "/3d model/favior.glb";
+  const title = data?.title || "Favior Shaker";
+  const subtitle = data?.subtitle || "Pro Series";
+  const description = data?.description || "Engineered for the dedicated athlete. Leak-proof guarantee with a premium matte finish.";
+  const features = data?.features && data.features.length > 0 ? data.features : [
+    "Premium Food-Grade Stainless Steel",
+    "Double-wall vacuum insulation",
+  ];
+  const fallbackImage = data?.fallbackImage || "/favior_pro_shaker_black.jpg";
+  const topMarquee = data?.topMarquee || "FAVIOR PRO SERIES • LEAK-PROOF GUARANTEE • FOOD-GRADE STAINLESS STEEL • DOUBLE-WALL VACUUM •";
+  const bottomMarquee = data?.bottomMarquee || "PREMIUM PERFORMANCE • ENGINEERED FOR ATHLETES • MATTE BLACK FINISH • 300ML / 750ML •";
+
   // Fixed eye-level front view (no scroll-driven rotation)
   const cameraOrbit = `0deg 75deg ${isDesktop ? "220%" : "170%"}`;
+
+  const cleanPrice = localVariant.price ? localVariant.price.replace(/^₹/, "") : "599";
 
   const handleAddToCart = () => {
     addToCart({
       id: `favior-pro-shaker-${localVariant.name}`,
-      name: `Favior Pro Shaker (${localVariant.name})`,
-      price: `₹${localVariant.price}`,
-      image: "/favior_pro_shaker_black.jpg",
+      name: `${title} (${localVariant.name})`,
+      price: `₹${cleanPrice}`,
+      image: fallbackImage,
       color: "Matte Black",
       size: localVariant.name,
       slug: "favior-pro-series-shaker-stealth-black",
@@ -46,9 +73,9 @@ export default function Model3DSection() {
   const handleBuyNow = () => {
     addToCart({
       id: `favior-pro-shaker-${localVariant.name}`,
-      name: `Favior Pro Shaker (${localVariant.name})`,
-      price: `₹${localVariant.price}`,
-      image: "/favior_pro_shaker_black.jpg",
+      name: `${title} (${localVariant.name})`,
+      price: `₹${cleanPrice}`,
+      image: fallbackImage,
       color: "Matte Black",
       size: localVariant.name,
       slug: "favior-pro-series-shaker-stealth-black",
@@ -67,10 +94,10 @@ export default function Model3DSection() {
         {/* Top Black Marquee Bar (Moving Left - Seamless Infinite Loop) */}
         <div className="absolute top-0 left-0 right-0 overflow-hidden pointer-events-none z-20 select-none bg-black py-6 sm:py-7 flex items-center border-b border-zinc-800 shadow-md">
           <div className="animate-marquee-left flex gap-8 whitespace-nowrap text-xs sm:text-xs font-bold uppercase tracking-[0.25em] text-white py-2.5 leading-relaxed">
-            <span>FAVIOR PRO SERIES &nbsp;•&nbsp; LEAK-PROOF GUARANTEE &nbsp;•&nbsp; FOOD-GRADE STAINLESS STEEL &nbsp;•&nbsp; DOUBLE-WALL VACUUM &nbsp;•&nbsp;</span>
-            <span>FAVIOR PRO SERIES &nbsp;•&nbsp; LEAK-PROOF GUARANTEE &nbsp;•&nbsp; FOOD-GRADE STAINLESS STEEL &nbsp;•&nbsp; DOUBLE-WALL VACUUM &nbsp;•&nbsp;</span>
-            <span>FAVIOR PRO SERIES &nbsp;•&nbsp; LEAK-PROOF GUARANTEE &nbsp;•&nbsp; FOOD-GRADE STAINLESS STEEL &nbsp;•&nbsp; DOUBLE-WALL VACUUM &nbsp;•&nbsp;</span>
-            <span>FAVIOR PRO SERIES &nbsp;•&nbsp; LEAK-PROOF GUARANTEE &nbsp;•&nbsp; FOOD-GRADE STAINLESS STEEL &nbsp;•&nbsp; DOUBLE-WALL VACUUM &nbsp;•&nbsp;</span>
+            <span>{topMarquee} &nbsp;•&nbsp;</span>
+            <span>{topMarquee} &nbsp;•&nbsp;</span>
+            <span>{topMarquee} &nbsp;•&nbsp;</span>
+            <span>{topMarquee} &nbsp;•&nbsp;</span>
           </div>
         </div>
 
@@ -84,10 +111,10 @@ export default function Model3DSection() {
         {/* Bottom Black Marquee Bar (Moving Right - Seamless Infinite Loop) */}
         <div className="absolute bottom-0 left-0 right-0 overflow-hidden pointer-events-none z-20 select-none bg-black py-6 sm:py-7 flex items-center border-t border-zinc-800 shadow-md">
           <div className="animate-marquee-right flex gap-8 whitespace-nowrap text-xs sm:text-xs font-bold uppercase tracking-[0.25em] text-white py-2.5 leading-relaxed">
-            <span>PREMIUM PERFORMANCE &nbsp;•&nbsp; ENGINEERED FOR ATHLETES &nbsp;•&nbsp; MATTE BLACK FINISH &nbsp;•&nbsp; 300ML / 750ML &nbsp;•&nbsp;</span>
-            <span>PREMIUM PERFORMANCE &nbsp;•&nbsp; ENGINEERED FOR ATHLETES &nbsp;•&nbsp; MATTE BLACK FINISH &nbsp;•&nbsp; 300ML / 750ML &nbsp;•&nbsp;</span>
-            <span>PREMIUM PERFORMANCE &nbsp;•&nbsp; ENGINEERED FOR ATHLETES &nbsp;•&nbsp; MATTE BLACK FINISH &nbsp;•&nbsp; 300ML / 750ML &nbsp;•&nbsp;</span>
-            <span>PREMIUM PERFORMANCE &nbsp;•&nbsp; ENGINEERED FOR ATHLETES &nbsp;•&nbsp; MATTE BLACK FINISH &nbsp;•&nbsp; 300ML / 750ML &nbsp;•&nbsp;</span>
+            <span>{bottomMarquee} &nbsp;•&nbsp;</span>
+            <span>{bottomMarquee} &nbsp;•&nbsp;</span>
+            <span>{bottomMarquee} &nbsp;•&nbsp;</span>
+            <span>{bottomMarquee} &nbsp;•&nbsp;</span>
           </div>
         </div>
 
@@ -105,8 +132,8 @@ export default function Model3DSection() {
 
             <div className="w-full h-[250px] sm:h-[340px] lg:h-[520px] max-w-[250px] sm:max-w-[340px] lg:max-w-[520px] relative flex items-center justify-center z-10">
               <Model3D
-                src="/3d model/favior.glb"
-                alt="Favior 3D Shaker"
+                src={modelSrc}
+                alt={title}
                 cameraOrbit={cameraOrbit}
               />
             </div>
@@ -116,31 +143,29 @@ export default function Model3DSection() {
           <div className="col-span-1 hero-specs-panel">
             <div>
               <h2 className="hero-spec-title">
-                Favior Shaker
+                {title}
               </h2>
               <p className="hero-spec-subtitle">
-                Pro Series • {localVariant.name}
+                {subtitle} • {localVariant.name}
               </p>
             </div>
 
             {/* Desktop Price */}
             <div className="hero-spec-price hero-price-desktop">
-              ₹{localVariant.price}
+              ₹{cleanPrice}
             </div>
 
             <div>
               <p className="hero-spec-desc">
-                Engineered for the dedicated athlete. Leak-proof guarantee with a premium matte finish.
+                {description}
               </p>
               <ul className="hero-spec-bullets">
-                <li className="hero-spec-bullet-item">
-                  <span className="hero-spec-bullet-dot" />
-                  <span>Premium Food-Grade Stainless Steel</span>
-                </li>
-                <li className="hero-spec-bullet-item">
-                  <span className="hero-spec-bullet-dot" />
-                  <span>Double-wall vacuum insulation</span>
-                </li>
+                {features.map((feat, idx) => (
+                  <li key={idx} className="hero-spec-bullet-item">
+                    <span className="hero-spec-bullet-dot" />
+                    <span>{feat}</span>
+                  </li>
+                ))}
               </ul>
             </div>
 
@@ -148,7 +173,7 @@ export default function Model3DSection() {
             <div className="hero-capacity-price-row">
               {/* Capacity / Quantity Pill Selector (Left) */}
               <div className="hero-capacity-container">
-                {SHAKER_VARIANTS.map((variant) => (
+                {variants.map((variant) => (
                   <button
                     key={variant.name}
                     onClick={() => setLocalVariant(variant)}
@@ -163,7 +188,7 @@ export default function Model3DSection() {
 
               {/* Mobile Price (Right, above Add to Cart) */}
               <div className="hero-spec-price hero-price-mobile">
-                ₹{localVariant.price}
+                ₹{cleanPrice}
               </div>
             </div>
 

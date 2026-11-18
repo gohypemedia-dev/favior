@@ -7,11 +7,11 @@ import Model3DSection from "@/components/Model3DSection";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import Navbar from "@/components/Navbar";
 import HeroVideo from "@/components/HeroVideo";
-import ComboBuyNowButton from "@/components/ComboBuyNowButton";
 import FaqSection from "@/components/FaqSection";
 import SiteFooter from "@/components/SiteFooter";
 import { db } from "@/lib/db";
 import { listActiveBanners } from "@/lib/server/controllers/banners.controller";
+import { get3DShakerData } from "@/lib/server/controllers/three-d-shaker.controller";
 
 export const dynamic = 'force-dynamic';
 
@@ -87,11 +87,12 @@ const ArrowRightIcon = () => (
    Page Component
 ───────────────────────────────────── */
 export default async function Home() {
-  const [dbProducts, activeBanners] = await Promise.all([
+  const [dbProducts, activeBanners, shakerBanner] = await Promise.all([
     db.product.findMany({
       orderBy: { createdAt: "desc" }
     }),
-    listActiveBanners()
+    listActiveBanners("hero"),
+    get3DShakerData()
   ]);
 
   const allProducts: Product[] = dbProducts.map((p: any) => ({
@@ -158,7 +159,7 @@ export default async function Home() {
 
       {/* ── 3D Interactive Model Section ── */}
       <div id="section-3d-model" className="scroll-mt-14 sm:scroll-mt-16">
-        <Model3DSection />
+        <Model3DSection data={shakerBanner} />
       </div>
 
       {/* ── Featured Products Grid ── */}
@@ -307,20 +308,25 @@ export default async function Home() {
           </div>
         </Link>
 
-        {/* Buy Now Button Below Banner */}
-        <ComboBuyNowButton
-          product={
-            comboProduct
-              ? {
-                  id: comboProduct.id,
-                  slug: comboProduct.slug,
-                  name: comboProduct.name,
-                  price: comboProduct.price,
-                  image: comboProduct.mainImage,
-                }
-              : undefined
-          }
-        />
+        {/* Center Outlined CTA Button matching Bestsellers */}
+        <div
+          className="flex justify-center w-full"
+          style={{
+            marginTop: "40px",
+            marginBottom: "8px",
+          }}
+        >
+          <Link
+            href="/products/favior-complete-gym-kit"
+            className="inline-flex items-center justify-center bg-transparent hover:bg-[#111111] text-[#111111] hover:text-white border border-[#111111] text-[11px] font-semibold uppercase tracking-[0.18em] leading-none transition-colors duration-200 cursor-pointer"
+            style={{
+              padding: "16px 36px",
+              lineHeight: 1,
+            }}
+          >
+            Buy Now
+          </Link>
+        </div>
       </section>
       )}
 

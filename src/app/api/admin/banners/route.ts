@@ -2,13 +2,16 @@ import { NextResponse } from "next/server"
 import { verifySession } from "@/lib/server/dal/auth"
 import { listBanners, createBanner } from "@/lib/server/controllers/banners.controller"
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await verifySession()
   if (!session || session.role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const banners = await listBanners()
+  const { searchParams } = new URL(request.url)
+  const category = searchParams.get("category") || undefined
+
+  const banners = await listBanners(category)
   return NextResponse.json(banners)
 }
 
@@ -26,13 +29,14 @@ export async function POST(request: Request) {
 
     const banner = await createBanner({
       title: body.title,
-      category: body.category,
-      caption: body.caption,
+      category: body.category || "hero",
+      caption: body.caption || null,
       src: body.src,
-      mobileSrc: body.mobileSrc,
+      mobileSrc: body.mobileSrc || null,
+      images: Array.isArray(body.images) ? body.images : [],
       alt: body.alt || body.title,
-      cta: body.cta,
-      linkUrl: body.linkUrl,
+      cta: body.cta || "EXPLORE COLLECTION",
+      linkUrl: body.linkUrl || "/all-products",
       sortOrder: Number(body.sortOrder) || 0,
       isActive: body.isActive !== undefined ? Boolean(body.isActive) : true,
     })

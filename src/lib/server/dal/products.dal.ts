@@ -126,6 +126,13 @@ export type CreateProductInput = {
   price: string;
   oldPrice?: string | null;
   discount?: string | null;
+  subtitle?: string | null;
+  verifiedBadge?: string | null;
+  socialProofText?: string | null;
+  detailsBody?: string | null;
+  sizes?: string[];
+  careNotes?: string[];
+  shippingNotes?: string[];
   rating?: number;
   reviewsCount?: string;
   description: string;
@@ -145,6 +152,13 @@ export type UpdateProductInput = Partial<CreateProductInput> & {
   price?: string;
   oldPrice?: string | null;
   discount?: string | null;
+  subtitle?: string | null;
+  verifiedBadge?: string | null;
+  socialProofText?: string | null;
+  detailsBody?: string | null;
+  sizes?: string[];
+  careNotes?: string[];
+  shippingNotes?: string[];
   rating?: number;
   reviewsCount?: string;
   description?: string;

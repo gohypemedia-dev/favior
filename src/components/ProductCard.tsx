@@ -124,7 +124,7 @@ export function ProductCard({
     p3: "favior-complete-gym-kit",
     p4: "favior-luxury-gym-towel",
     c1: "favior-pro-series-shaker-stealth-black",
-    c2: "favior-heavy-duty-wrist-wraps",
+    c2: "favior-pro-series-shaker-stealth-black",
     c3: "favior-complete-gym-kit",
     c4: "favior-resistance-loop-bands-5-pack",
     c5: "favior-pro-series-shaker-stealth-black",

@@ -22,11 +22,13 @@ import {
   FlameIcon,
   ImageIcon,
   VideoIcon,
+  BoxIcon,
 } from "lucide-react"
 
 const routeIcons: Record<string, React.ReactNode> = {
   Home: <HomeIcon style={{"flexShrink":"0"}} />,
   Banners: <ImageIcon style={{"flexShrink":"0"}} />,
+  "3D Shaker Banner": <BoxIcon style={{"flexShrink":"0"}} />,
   "Creator Videos": <VideoIcon style={{"flexShrink":"0"}} />,
   Orders: <InboxIcon style={{"flexShrink":"0"}} />,
   Products: <PackageIcon style={{"flexShrink":"0"}} />,
