@@ -25,11 +25,9 @@ import type { HeroBannerItem } from "@/lib/server/controllers/banners.controller
 import { uploadProductImage } from "@/lib/client/upload-product-image"
 
 const BANNER_TYPE_OPTIONS = [
-  { value: "hero", label: "Hero Section Banner (Main Homepage Slider)", desc: "Displayed at top of homepage with headline, tagline, and CTA button." },
-  { value: "split_duffle", label: "Split Banner 1: Built for the Gym (Duffle Bag)", desc: "Editorial split banner with duffle image on left & dark content on right." },
-  { value: "split_shaker", label: "Split Banner 2: Never Miss a Rep (Shaker Bottle)", desc: "Editorial split banner with light content on left & shaker bottle on right." },
+  { value: "hero", label: "Hero Section Banner (Main Homepage Slider)", desc: "Displayed at top of homepage with headline, tagline, and trust badges." },
   { value: "build_your_kit", label: "Build Your Kit Section Banner", desc: "Displayed above or inside the custom kit builder section." },
-  { value: "split_section", label: "Other Split Editorial Feature Banner", desc: "Full-width featured spotlight editorial banner." },
+  { value: "split_section", label: "Split Editorial Feature Banner", desc: "Full-width featured spotlight editorial banner." },
   { value: "promotional", label: "Promotional / Sale Banner", desc: "Campaign drops, seasonal sale highlights." },
 ]
 
@@ -51,7 +49,7 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
         .then((data) => {
           if (Array.isArray(data) && data.length > 0) setBanners(data)
         })
-        .catch(() => {})
+        .catch(() => { })
     }
   }, [initialBanners])
 
@@ -652,13 +650,7 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
                       height: "22px",
                       padding: "0 0.5rem",
                     }}>
-                      {isHero
-                        ? "Hero Slider"
-                        : banner.category === "split_duffle"
-                        ? "Split Banner 1 (Duffle)"
-                        : banner.category === "split_shaker"
-                        ? "Split Banner 2 (Shaker)"
-                        : banner.category}
+                      {isHero ? "Hero Slider" : banner.category}
                     </span>
                   </div>
                 </div>
