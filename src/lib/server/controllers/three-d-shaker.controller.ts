@@ -57,8 +57,12 @@ function parseBannerRecord(record: any): ThreeDShakerData {
     description: record.caption || DEFAULT_3D_SHAKER_DATA.description,
     modelSrc: record.src || DEFAULT_3D_SHAKER_DATA.modelSrc,
     fallbackImage: record.mobileSrc || DEFAULT_3D_SHAKER_DATA.fallbackImage,
-    features: Array.isArray(extra.features) ? extra.features : DEFAULT_3D_SHAKER_DATA.features,
-    variants: Array.isArray(extra.variants) ? extra.variants : DEFAULT_3D_SHAKER_DATA.variants,
+    features: Array.isArray(extra.features) && extra.features.length > 0
+      ? extra.features
+      : DEFAULT_3D_SHAKER_DATA.features,
+    variants: Array.isArray(extra.variants) && extra.variants.length > 0
+      ? extra.variants
+      : DEFAULT_3D_SHAKER_DATA.variants,
     topMarquee: extra.topMarquee || DEFAULT_3D_SHAKER_DATA.topMarquee,
     bottomMarquee: extra.bottomMarquee || DEFAULT_3D_SHAKER_DATA.bottomMarquee,
     isActive: record.isActive !== undefined ? record.isActive : true,

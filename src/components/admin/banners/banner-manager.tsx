@@ -26,8 +26,12 @@ import { uploadProductImage } from "@/lib/client/upload-product-image"
 
 const BANNER_TYPE_OPTIONS = [
   { value: "hero", label: "Hero Section Banner (Main Homepage Slider)", desc: "Displayed at top of homepage with headline, tagline, and trust badges." },
+  { value: "hero", label: "Hero Section Banner (Main Homepage Slider)", desc: "Displayed at top of homepage with headline, tagline, and CTA button." },
+  { value: "split_duffle", label: "Split Banner 1: Built for the Gym (Duffle Bag)", desc: "Editorial split banner with duffle image on left & dark content on right." },
+  { value: "split_shaker", label: "Split Banner 2: Never Miss a Rep (Shaker Bottle)", desc: "Editorial split banner with light content on left & shaker bottle on right." },
   { value: "build_your_kit", label: "Build Your Kit Section Banner", desc: "Displayed above or inside the custom kit builder section." },
   { value: "split_section", label: "Split Editorial Feature Banner", desc: "Full-width featured spotlight editorial banner." },
+  { value: "split_section", label: "Other Split Editorial Feature Banner", desc: "Full-width featured spotlight editorial banner." },
   { value: "promotional", label: "Promotional / Sale Banner", desc: "Campaign drops, seasonal sale highlights." },
 ]
 
@@ -39,6 +43,8 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isUploadingDesktop, setIsUploadingDesktop] = useState(false)
   const [isUploadingMobile, setIsUploadingMobile] = useState(false)
+  const [isUploadingMulti, setIsUploadingMulti] = useState(false)
+  const [multiUrlInput, setMultiUrlInput] = useState("")
 
   useEffect(() => {
     if (initialBanners && initialBanners.length > 0) {
@@ -76,6 +82,7 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
     caption: "",
     src: "",
     mobileSrc: "",
+    images: [] as string[],
     alt: "",
     cta: "EXPLORE COLLECTION",
     linkUrl: "/all-products",
@@ -91,12 +98,14 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
       caption: "",
       src: "",
       mobileSrc: "",
+      images: [],
       alt: "",
       cta: "EXPLORE COLLECTION",
       linkUrl: "/all-products",
       sortOrder: banners.length,
       isActive: true,
     })
+    setMultiUrlInput("")
     setIsModalOpen(true)
   }
 
@@ -108,12 +117,14 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
       caption: banner.caption || "",
       src: banner.src || "",
       mobileSrc: banner.mobileSrc || "",
+      images: banner.images || [],
       alt: banner.alt || banner.title || "",
       cta: banner.cta || "EXPLORE COLLECTION",
       linkUrl: banner.linkUrl || "/all-products",
       sortOrder: banner.sortOrder ?? 0,
       isActive: banner.isActive,
     })
+    setMultiUrlInput("")
     setIsModalOpen(true)
   }
 
@@ -260,15 +271,75 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
     }
   }
 
+  async function handleMultiImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+    setIsUploadingMulti(true)
+    try {
+      const uploadedUrls: string[] = []
+      for (const file of files) {
+        const res = await uploadProductImage(file)
+        if (res?.url) uploadedUrls.push(res.url)
+      }
+      setFormData((prev) => {
+        const nextImages = [...(prev.images || []), ...uploadedUrls]
+        return {
+          ...prev,
+          images: nextImages,
+          src: prev.src || nextImages[0] || "",
+        }
+      })
+      toast.success(`${uploadedUrls.length} image(s) uploaded successfully!`)
+    } catch (err) {
+      console.error(err)
+      toast.error("Failed to upload some images")
+    } finally {
+      setIsUploadingMulti(false)
+      e.target.value = ""
+    }
+  }
+
+  function handleAddMultiImageUrl() {
+    if (!multiUrlInput.trim()) return
+    setFormData((prev) => {
+      const nextImages = [...(prev.images || []), multiUrlInput.trim()]
+      return {
+        ...prev,
+        images: nextImages,
+        src: prev.src || nextImages[0] || "",
+      }
+    })
+    setMultiUrlInput("")
+  }
+
+  function handleRemoveMultiImage(index: number) {
+    setFormData((prev) => {
+      const nextImages = [...(prev.images || [])]
+      nextImages.splice(index, 1)
+      return {
+        ...prev,
+        images: nextImages,
+        src: prev.src === prev.images?.[index] ? (nextImages[0] || "") : prev.src,
+      }
+    })
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!formData.title.trim()) {
       toast.error("Banner title/headline is required")
       return
     }
-    if (!formData.src.trim()) {
-      toast.error("Banner Desktop Image (URL or file) is required")
+
+    const effectiveSrc = formData.src.trim() || formData.images[0] || ""
+    if (!effectiveSrc) {
+      toast.error("Banner Desktop Image or at least 1 image is required")
       return
+    }
+
+    const payload = {
+      ...formData,
+      src: effectiveSrc,
     }
 
     setIsSubmitting(true)
@@ -277,7 +348,7 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
         const res = await fetch(`/api/admin/banners/${editingBanner.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(payload),
         })
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}))
@@ -291,7 +362,7 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
         const res = await fetch("/api/admin/banners", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(payload),
         })
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}))
@@ -651,6 +722,13 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
                       padding: "0 0.5rem",
                     }}>
                       {isHero ? "Hero Slider" : banner.category}
+                      {isHero
+                        ? "Hero Slider"
+                        : banner.category === "split_duffle"
+                          ? "Split Banner 1 (Duffle)"
+                          : banner.category === "split_shaker"
+                            ? "Split Banner 2 (Shaker)"
+                            : banner.category}
                     </span>
                   </div>
                 </div>
@@ -1147,16 +1225,174 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
                     </span>
                   </div>
 
+                  {/* Multi-Image Upload (Build Your Kit & Multi-item Showcases) */}
+                  <div style={{
+                    borderRadius: "0.75rem",
+                    border: "1.5px solid #e5e7eb",
+                    backgroundColor: formData.category === "build_your_kit" ? "#fbfbfe" : "#ffffff",
+                    padding: "1rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.75rem",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <span style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#111827" }}>
+                            Multiple Banner Images (Build Your Kit)
+                          </span>
+                          {formData.category === "build_your_kit" && (
+                            <span className="admin-pill-badge" style={{ backgroundColor: "#111827", color: "#ffffff", fontSize: "10px", padding: "0 0.4rem" }}>
+                              Recommended
+                            </span>
+                          )}
+                        </div>
+                        <p style={{ margin: "0.125rem 0 0 0", fontSize: "0.75rem", color: "#6b7280" }}>
+                          Upload multiple product items to showcase side-by-side in this banner.
+                        </p>
+                      </div>
+                      <label
+                        className="admin-btn admin-btn-primary"
+                        style={{ height: "34px", minHeight: "34px", padding: "0 0.875rem", fontSize: "12px", cursor: isUploadingMulti ? "not-allowed" : "pointer" }}
+                      >
+                        {isUploadingMulti ? (
+                          <Loader2Icon style={{ width: "0.875rem", height: "0.875rem", animation: "spin 1s linear infinite" }} />
+                        ) : (
+                          <PlusIcon style={{ width: "0.875rem", height: "0.875rem" }} />
+                        )}
+                        <span>{isUploadingMulti ? "Uploading..." : "Upload Multiple Images"}</span>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          style={{ display: "none" }}
+                          disabled={isUploadingMulti}
+                          onChange={handleMultiImageUpload}
+                        />
+                      </label>
+                    </div>
+
+                    {/* Image URL Adder Input */}
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <input
+                        type="text"
+                        placeholder="Or paste an image URL (e.g. /favior_heritage_duffle_bag.jpg)..."
+                        value={multiUrlInput}
+                        onChange={(e) => setMultiUrlInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddMultiImageUrl();
+                          }
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: "0.5rem 0.75rem",
+                          borderRadius: "0.375rem",
+                          border: "1px solid #d1d5db",
+                          fontFamily: "monospace",
+                          fontSize: "0.75rem",
+                          color: "#111827",
+                          outline: "none",
+                          backgroundColor: "#ffffff",
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddMultiImageUrl}
+                        className="admin-btn admin-btn-secondary"
+                        style={{ height: "32px", minHeight: "32px", padding: "0 0.75rem", fontSize: "11px" }}
+                      >
+                        Add URL
+                      </button>
+                    </div>
+
+                    {/* Thumbnails Grid of Uploaded Multiple Images */}
+                    {formData.images && formData.images.length > 0 ? (
+                      <div style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
+                        gap: "0.625rem",
+                        paddingTop: "0.25rem",
+                      }}>
+                        {formData.images.map((imgUrl, i) => (
+                          <div
+                            key={i}
+                            style={{
+                              position: "relative",
+                              aspectRatio: "1 / 1",
+                              borderRadius: "0.5rem",
+                              border: "1px solid #e5e7eb",
+                              backgroundColor: "#ffffff",
+                              overflow: "hidden",
+                              boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                            }}
+                          >
+                            <Image
+                              src={imgUrl}
+                              alt={`Item ${i + 1}`}
+                              fill
+                              style={{ objectFit: "contain", padding: "4px" }}
+                              sizes="90px"
+                            />
+                            <span style={{
+                              position: "absolute",
+                              top: "3px",
+                              left: "3px",
+                              backgroundColor: "rgba(0,0,0,0.7)",
+                              color: "#ffffff",
+                              fontSize: "9px",
+                              fontWeight: 700,
+                              padding: "1px 4px",
+                              borderRadius: "3px",
+                              zIndex: 2,
+                            }}>
+                              #{i + 1}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveMultiImage(i)}
+                              style={{
+                                position: "absolute",
+                                top: "3px",
+                                right: "3px",
+                                backgroundColor: "#ef4444",
+                                color: "#ffffff",
+                                border: "none",
+                                borderRadius: "3px",
+                                width: "18px",
+                                height: "18px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                cursor: "pointer",
+                                padding: 0,
+                                zIndex: 2,
+                              }}
+                              title="Remove image"
+                            >
+                              <Trash2Icon style={{ width: "10px", height: "10px" }} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p style={{ margin: 0, fontSize: "0.75rem", color: "#9ca3af", fontStyle: "italic" }}>
+                        No multiple images added yet. Upload 2 or more images above, or use the single desktop image below.
+                      </p>
+                    )}
+                  </div>
+
                   {/* Desktop Image */}
                   <div>
                     <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#1f2937", marginBottom: "0.375rem" }}>
-                      Desktop Banner Image <span style={{ color: "#ef4444" }}>*</span>
+                      Desktop Banner Image (Primary / Fallback) <span style={{ color: "#ef4444" }}>*</span>
                     </label>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                       <input
                         type="text"
-                        required
-                        placeholder="/IMG_5576.PNG or https://..."
+                        required={!formData.images || formData.images.length === 0}
+                        placeholder="/favior_combo_pack_banner.jpg or https://..."
                         value={formData.src}
                         onChange={(e) => setFormData({ ...formData, src: e.target.value })}
                         style={{
@@ -1177,7 +1413,7 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
                         ) : (
                           <UploadIcon style={{ width: "1rem", height: "1rem" }} />
                         )}
-                        <span>Upload Image</span>
+                        <span>Upload Single</span>
                         <input
                           type="file"
                           accept="image/*"
@@ -1195,11 +1431,58 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
                     aspectRatio: "16 / 9",
                     borderRadius: "0.75rem",
                     border: "1px solid #e5e7eb",
-                    backgroundColor: "#09090b",
+                    backgroundColor: formData.images && formData.images.length > 1 ? "#ffffff" : "#09090b",
                     overflow: "hidden",
                     boxShadow: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)",
                   }}>
-                    {formData.src ? (
+                    {formData.images && formData.images.length > 1 ? (
+                      <div style={{
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "#ffffff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "12px",
+                        padding: "1rem",
+                        boxSizing: "border-box",
+                      }}>
+                        {formData.images.map((imgUrl, idx) => (
+                          <div
+                            key={idx}
+                            style={{
+                              position: "relative",
+                              flex: 1,
+                              height: "100%",
+                              maxHeight: "160px",
+                            }}
+                          >
+                            <Image
+                              src={imgUrl}
+                              alt={`Preview item ${idx + 1}`}
+                              fill
+                              style={{ objectFit: "contain" }}
+                              sizes="120px"
+                            />
+                          </div>
+                        ))}
+                        <div style={{
+                          position: "absolute",
+                          bottom: "0.75rem",
+                          left: "0.75rem",
+                          borderRadius: "0.375rem",
+                          backgroundColor: "rgba(0, 0, 0, 0.75)",
+                          backdropFilter: "blur(4px)",
+                          padding: "0.25rem 0.625rem",
+                          fontSize: "0.6875rem",
+                          fontWeight: 600,
+                          color: "#ffffff",
+                          letterSpacing: "0.025em",
+                        }}>
+                          Build Your Kit Multi-Item Preview ({formData.images.length} items)
+                        </div>
+                      </div>
+                    ) : formData.src ? (
                       <>
                         <Image
                           src={formData.src}

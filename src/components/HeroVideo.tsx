@@ -16,18 +16,24 @@ export type HeroBannerProps = {
 };
 
 
-const heroSlides = [
+const shakerSlides: HeroBannerProps[] = [
   {
-    name: "Black",
-    image: "/IMG_5576.PNG",
+    id: "shaker-black",
+    src: "/IMG_5576.PNG",
     alt: "Favior Black Collection - Shaker, Gym Bag, Towel, and Deodorant",
   },
   {
-    name: "Beige",
-    image: "/ChatGPT Image Aug 3, 2026, 03_43_32 PM.png",
+    id: "shaker-beige",
+    src: "/ChatGPT Image Aug 3, 2026, 03_43_32 PM.png",
     alt: "Favior Beige Collection - Shaker, Gym Bag, Towel, and Deodorant",
   },
-] as const;
+].map((slide) => ({
+  title: "PREMIUM FITNESS ESSENTIALS",
+  caption: "Crafted for performance. Designed for you.",
+  cta: "EXPLORE COLLECTION",
+  linkUrl: "/all-products",
+  ...slide,
+}));
 
 /* Left Mini Trust Badges Icons (Exact Reference Spec) */
 const ShieldCheckIcon = ({ className = "hero-mini-badge-icon" }: { className?: string }) => (
@@ -207,34 +213,36 @@ const heroFeatures = [
 ];
 
 export default function HeroVideo({ banners = [] }: { banners?: HeroBannerProps[] }) {
-  const [activeSlide, setActiveSlide] = useState(0);
-  const [prevSlide, setPrevSlide] = useState<number | null>(null);
+  const [{ activeSlide, prevSlide }, setSlide] = useState({
+    activeSlide: 0,
+    prevSlide: null as number | null,
+  });
 
-  // Fallback to defaults if no banners are provided from DB
-  const slides = banners.length > 0 ? banners : heroSlides.map(s => ({
-    id: s.name,
-    title: "PREMIUM FITNESS ESSENTIALS",
-    caption: "Crafted for performance. Designed for you.",
-    src: s.image,
-    mobileSrc: null,
-    alt: s.alt,
-    cta: "EXPLORE COLLECTION",
-    linkUrl: "/all-products",
-    category: "hero"
-  }));
+  let slides = banners.length ? banners : shakerSlides;
+  if (banners.length === 1) {
+    const [banner] = banners;
+    const shadeIndex = shakerSlides.findIndex((slide) => slide.src === banner.src);
+    if (shadeIndex !== -1) {
+      const otherShade = shakerSlides[1 - shadeIndex];
+      slides = [
+        banner,
+        { ...banner, src: otherShade.src, alt: otherShade.alt, id: otherShade.id, mobileSrc: null },
+      ];
+    }
+  }
 
   const safeIndex = activeSlide < slides.length ? activeSlide : 0;
-  const activeBanner = slides[safeIndex] || slides[0];
+  const activeBanner = slides[safeIndex];
 
   useEffect(() => {
     if (slides.length <= 1) return;
 
     const timer = setInterval(() => {
-      setActiveSlide((current) => {
-        setPrevSlide(current);
-        return (current + 1) % slides.length;
+      setSlide(({ activeSlide }) => {
+        const current = activeSlide < slides.length ? activeSlide : 0;
+        return { activeSlide: (current + 1) % slides.length, prevSlide: current };
       });
-    }, 4000); // 4000ms for comfortable reading of text
+    }, 4000);
 
     return () => clearInterval(timer);
   }, [slides.length]);
@@ -242,11 +250,11 @@ export default function HeroVideo({ banners = [] }: { banners?: HeroBannerProps[
   useEffect(() => {
     if (prevSlide !== null) {
       const cleanupTimer = setTimeout(() => {
-        setPrevSlide(null);
+        setSlide((current) => ({ ...current, prevSlide: null }));
       }, 700);
       return () => clearTimeout(cleanupTimer);
     }
-  }, [prevSlide, activeSlide]);
+  }, [prevSlide]);
 
   return (
     <section className="hero-main-container" aria-label="Favior Hero Showcase">
@@ -318,8 +326,8 @@ export default function HeroVideo({ banners = [] }: { banners?: HeroBannerProps[
         {/* Backdrop 3D Product Image Slides with Seamless Stacked Cross-Dissolve */}
         <div className="hero-stage-backdrop">
           {slides.map((slide, index) => {
-            const isActive = activeSlide === index;
-            const isPrev = prevSlide === index;
+            const isActive = safeIndex === index;
+            const isPrev = !isActive && prevSlide === index;
             return (
               <div
                 key={slide.id}
@@ -333,7 +341,7 @@ export default function HeroVideo({ banners = [] }: { banners?: HeroBannerProps[
                         src={slide.src}
                         alt={slide.alt || slide.title || "Hero Slide"}
                         fill
-                        priority
+                        loading="eager"
                         sizes="(max-width: 1440px) 100vw, 1440px"
                         className="hero-product-img"
                       />
@@ -343,7 +351,7 @@ export default function HeroVideo({ banners = [] }: { banners?: HeroBannerProps[
                         src={slide.mobileSrc}
                         alt={slide.alt || slide.title || "Hero Slide"}
                         fill
-                        priority
+                        loading="eager"
                         sizes="100vw"
                         className="hero-product-img"
                       />
@@ -354,7 +362,7 @@ export default function HeroVideo({ banners = [] }: { banners?: HeroBannerProps[
                     src={slide.src}
                     alt={slide.alt || slide.title || "Hero Slide"}
                     fill
-                    priority
+                    loading="eager"
                     sizes="(max-width: 1440px) 100vw, 1440px"
                     className="hero-product-img"
                   />

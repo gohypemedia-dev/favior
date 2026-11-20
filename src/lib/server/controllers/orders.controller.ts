@@ -1,5 +1,6 @@
 import * as ordersDal from "@/lib/server/dal/orders.dal";
 import * as productsDal from "@/lib/server/dal/products.dal";
+import { isShakerVariantSlug } from "@/lib/shaker-product";
 
 // ─── List ────────────────────────────────────────────────────────────────────
 
@@ -31,6 +32,10 @@ export async function createOrder(data: ordersDal.CreateOrderInput) {
       let product = await productsDal.getProductById(item.productId);
       if (!product) {
         product = await productsDal.getProductBySlug(item.productId);
+      }
+
+      if (isShakerVariantSlug(item.productId) && (!product || product.quantity < (item.quantity || 1))) {
+        throw new Error("The selected Favior Shaker size is currently unavailable.");
       }
 
       if (!product) {

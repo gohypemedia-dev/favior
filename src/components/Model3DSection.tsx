@@ -1,31 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Model3D from "@/components/Model3D";
 import { Check } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import type { ThreeDShakerData } from "@/lib/server/controllers/three-d-shaker.controller";
+import { getShakerCartItem, getShakerProductHref } from "@/lib/shaker-product";
 
-const FALLBACK_VARIANTS = [
-  { name: "300ml", price: "599", desc: "Pro Series • 300ml" },
-  { name: "750ml", price: "1,499", desc: "Pro Series • 750ml" }
-];
-
-export default function Model3DSection({ data }: { data?: ThreeDShakerData | null }) {
-  const router = useRouter();
-  const { addToCart, openCart } = useCart();
+export default function Model3DSection({ data }: { data: ThreeDShakerData }) {
+  const { addToCart } = useCart();
   const [isDesktop, setIsDesktop] = useState(false);
   const [added, setAdded] = useState(false);
 
-  const variants = data?.variants && data.variants.length > 0 ? data.variants : FALLBACK_VARIANTS;
-  const [localVariant, setLocalVariant] = useState(variants[0]);
-
-  useEffect(() => {
-    if (variants.length > 0) {
-      setLocalVariant(variants[0]);
-    }
-  }, [data]);
+  const { variants } = data;
+  const [selectedSize, setSelectedSize] = useState(variants[0].name);
+  const localVariant = variants.find((variant) => variant.name === selectedSize) ?? variants[0];
 
   useEffect(() => {
     const checkDesktop = () => setIsDesktop(window.innerWidth >= 1024);
@@ -34,53 +24,21 @@ export default function Model3DSection({ data }: { data?: ThreeDShakerData | nul
     return () => window.removeEventListener("resize", checkDesktop);
   }, []);
 
-  if (data && data.isActive === false) {
+  if (!data.isActive) {
     return null;
   }
 
-  const modelSrc = data?.modelSrc || "/3d model/favior.glb";
-  const title = data?.title || "Favior Shaker";
-  const subtitle = data?.subtitle || "Pro Series";
-  const description = data?.description || "Engineered for the dedicated athlete. Leak-proof guarantee with a premium matte finish.";
-  const features = data?.features && data.features.length > 0 ? data.features : [
-    "Premium Food-Grade Stainless Steel",
-    "Double-wall vacuum insulation",
-  ];
-  const fallbackImage = data?.fallbackImage || "/favior_pro_shaker_black.jpg";
-  const topMarquee = data?.topMarquee || "FAVIOR PRO SERIES • LEAK-PROOF GUARANTEE • FOOD-GRADE STAINLESS STEEL • DOUBLE-WALL VACUUM •";
-  const bottomMarquee = data?.bottomMarquee || "PREMIUM PERFORMANCE • ENGINEERED FOR ATHLETES • MATTE BLACK FINISH • 300ML / 750ML •";
+  const { modelSrc, title, subtitle, description, features, topMarquee, bottomMarquee } = data;
 
   // Fixed eye-level front view (no scroll-driven rotation)
   const cameraOrbit = `0deg 75deg ${isDesktop ? "220%" : "170%"}`;
 
-  const cleanPrice = localVariant.price ? localVariant.price.replace(/^₹/, "") : "599";
+  const item = getShakerCartItem(data, localVariant);
 
   const handleAddToCart = () => {
-    addToCart({
-      id: `favior-pro-shaker-${localVariant.name}`,
-      name: `${title} (${localVariant.name})`,
-      price: `₹${cleanPrice}`,
-      image: fallbackImage,
-      color: "Matte Black",
-      size: localVariant.name,
-      slug: "favior-pro-series-shaker-stealth-black",
-    });
+    addToCart(item);
     setAdded(true);
-    openCart();
     setTimeout(() => setAdded(false), 2000);
-  };
-
-  const handleBuyNow = () => {
-    addToCart({
-      id: `favior-pro-shaker-${localVariant.name}`,
-      name: `${title} (${localVariant.name})`,
-      price: `₹${cleanPrice}`,
-      image: fallbackImage,
-      color: "Matte Black",
-      size: localVariant.name,
-      slug: "favior-pro-series-shaker-stealth-black",
-    });
-    router.push("/checkout");
   };
 
   return (
@@ -152,7 +110,7 @@ export default function Model3DSection({ data }: { data?: ThreeDShakerData | nul
 
             {/* Desktop Price */}
             <div className="hero-spec-price hero-price-desktop">
-              ₹{cleanPrice}
+              {item.price}
             </div>
 
             <div>
@@ -176,7 +134,9 @@ export default function Model3DSection({ data }: { data?: ThreeDShakerData | nul
                 {variants.map((variant) => (
                   <button
                     key={variant.name}
-                    onClick={() => setLocalVariant(variant)}
+                    type="button"
+                    aria-pressed={localVariant.name === variant.name}
+                    onClick={() => setSelectedSize(variant.name)}
                     className={`hero-capacity-btn ${
                       localVariant.name === variant.name ? "active" : ""
                     }`}
@@ -188,21 +148,18 @@ export default function Model3DSection({ data }: { data?: ThreeDShakerData | nul
 
               {/* Mobile Price (Right, above Add to Cart) */}
               <div className="hero-spec-price hero-price-mobile">
-                ₹{cleanPrice}
+                {item.price}
               </div>
             </div>
 
             {/* Action Buttons */}
             <div className="hero-action-row">
-              <button
-                type="button"
-                onClick={handleBuyNow}
-                className="hero-btn-buy"
-              >
+              <Link href={getShakerProductHref(localVariant.name)} className="hero-btn-buy">
                 Buy Now
-              </button>
+              </Link>
 
               <button
+                type="button"
                 onClick={handleAddToCart}
                 className="hero-btn-cart"
               >

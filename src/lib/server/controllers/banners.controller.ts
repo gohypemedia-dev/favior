@@ -81,7 +81,7 @@ export const DEFAULT_HERO_BANNERS = [
   {
     title: "Build Your Kit",
     category: "build_your_kit",
-    caption: "Customize your personal athlete bundle with premium shaker, duffle, and towel.",
+    caption: null,
     src: "/favior_combo_pack_banner.jpg",
     mobileSrc: null,
     images: [
@@ -160,7 +160,7 @@ export async function ensureDefaultBannersSeeded() {
           data: {
             title: "Build Your Kit",
             category: "build_your_kit",
-            caption: "Customize your personal athlete bundle with premium shaker, duffle, and towel.",
+            caption: null,
             src: "/favior_combo_pack_banner.jpg",
             mobileSrc: null,
             images: [

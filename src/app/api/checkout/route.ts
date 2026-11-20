@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/server/dal/auth";
 import { createOrder } from "@/lib/server/controllers/orders.controller";
+import { isShakerVariantSlug } from "@/lib/shaker-product";
 
 export async function POST(req: Request) {
   try {
@@ -26,7 +27,7 @@ export async function POST(req: Request) {
     const orderInput = {
       userId: user.id,
       items: items.map((item: any) => ({
-        productId: item.id || item.productId,
+        productId: isShakerVariantSlug(item.productId) ? item.productId : item.id || item.productId,
         quantity: item.quantity || 1,
         unitPrice: parseFloat(item.price.toString().replace(/[^0-9.]/g, "")),
       })),

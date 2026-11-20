@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { getShakerProductHref, isShakerVariantSlug } from "@/lib/shaker-product";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -486,7 +487,9 @@ export function SideCartDrawer() {
                     <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "4px" }}>
                       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px" }}>
                         <Link
-                          href={`/products/${item.slug || item.productId}`}
+                          href={item.size && isShakerVariantSlug(item.productId)
+                            ? getShakerProductHref(item.size)
+                            : "/products/" + (item.slug || item.productId)}
                           onClick={closeCart}
                           style={{
                             fontSize: "12px",

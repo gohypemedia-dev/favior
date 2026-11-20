@@ -87,12 +87,13 @@ const ArrowRightIcon = () => (
    Page Component
 ───────────────────────────────────── */
 export default async function Home() {
-  const [dbProducts, activeBanners, shakerBanner] = await Promise.all([
+  const [dbProducts, activeBanners, shakerBanner, allActiveBanners] = await Promise.all([
     db.product.findMany({
       orderBy: { createdAt: "desc" }
     }),
     listActiveBanners("hero"),
-    get3DShakerData()
+    get3DShakerData(),
+    listActiveBanners("all")
   ]);
 
   const allProducts: Product[] = dbProducts.map((p: any) => ({
@@ -143,6 +144,45 @@ export default async function Home() {
   const duffleImg: string = duffleProduct?.mainImage ?? "";
   const shakerImg: string = shakerProduct?.mainImage ?? "";
 
+  // Dynamic Split Banners & Build Your Kit Banner from DB
+  const duffleBanner = allActiveBanners.find((b: any) => b.category === "split_duffle") || {
+    title: "Built for the gym. Crafted for travel",
+    caption:
+      "The Favior Heritage Gym Duffle Bag delivers 35L of premium capacity. Constructed with heavy-duty water-resistant ballistic canvas, full-grain leather accents, brushed antique brass hardware, and a dedicated ventilated shoe compartment.",
+    src: duffleImg || "/favior_heritage_duffle_bag.jpg",
+    cta: "Shop Duffle Bag",
+    linkUrl: "/all-products",
+    isActive: true,
+  };
+
+  const shakerSplitBanner = allActiveBanners.find((b: any) => b.category === "split_shaker") || {
+    title: "Never miss a rep. Never miss a sip",
+    caption:
+      "Crafted from shatterproof, BPA-free smoke Tritan with an integrated cyclone turbine mixing wheel. The Favior Pro Series Shaker delivers instantaneous, silky-smooth blending with a 100% leak-proof snap lock.",
+    src: shakerImg || "/favior_pro_shaker_black.jpg",
+    cta: "Shop Shakers",
+    linkUrl: "/shakers",
+    isActive: true,
+  };
+
+  const kitBanner = allActiveBanners.find((b: any) => b.category === "build_your_kit") || {
+    title: "Build Your Kit",
+    src: "/favior_combo_pack_banner.jpg",
+    images: [
+      duffleImg || "/favior_heritage_duffle_bag.jpg",
+      shakerImg || "/favior_pro_shaker_black.jpg",
+      "/favior_luxury_towel.jpg",
+    ],
+    cta: "Buy Now",
+    linkUrl: "/products/favior-complete-gym-kit",
+    isActive: true,
+  };
+
+  const kitCaption = kitBanner.caption?.trim() ===
+    "Customize your personal athlete bundle with premium shaker, duffle, and towel."
+    ? null
+    : kitBanner.caption;
+
   // Build Your Kit — 4 newest product images from DB
   const kitImages = dbProducts.slice(0, 4).map((p: any) => ({ img: p.mainImage as string, name: p.name as string, slug: p.slug as string }));
 
@@ -174,8 +214,8 @@ export default async function Home() {
 
 
 
-      {/* ── Split: Favior Duffle Bag / Text ── */}
-      {duffleImg && (
+      {/* ── Split 1: Built for the gym (Duffle Bag) ── */}
+      {duffleBanner.isActive && (duffleBanner.src || duffleImg) && (
       <section className="split-section">
         <div
           style={{
@@ -190,8 +230,8 @@ export default async function Home() {
           }}
         >
           <Image
-            src={duffleImg}
-            alt="Favior Heritage Gym Duffle Bag"
+            src={duffleBanner.src || duffleImg}
+            alt={duffleBanner.alt || duffleBanner.title}
             width={800}
             height={600}
             style={{
@@ -203,34 +243,32 @@ export default async function Home() {
           />
         </div>
         <div className="split-content dark">
-          <h2 className="serif">Built for the gym. Crafted for travel</h2>
-          <p>
-            The Favior Heritage Gym Duffle Bag delivers 35L of premium capacity.
-            Constructed with heavy-duty water-resistant ballistic canvas, full-grain
-            leather accents, brushed antique brass hardware, and a dedicated
-            ventilated shoe compartment.
-          </p>
-          <a href="/all-products" className="btn btn-light" style={{ alignSelf: "flex-start" }}>
-            Shop Duffle Bag
+          <h2 className="serif">{duffleBanner.title}</h2>
+          {duffleBanner.caption && <p>{duffleBanner.caption}</p>}
+          <a href={duffleBanner.linkUrl || "/all-products"} className="btn btn-light" style={{ alignSelf: "flex-start" }}>
+            {duffleBanner.cta || "Shop Duffle Bag"}
           </a>
         </div>
       </section>
       )}
 
-      {/* ── Split: Shaker Text (Left) / Favior Shaker (Right) ── */}
-      {shakerImg && (
+      {/* ── Split 2: Never miss a rep (Shaker Bottle) ── */}
+      {shakerSplitBanner.isActive && (shakerSplitBanner.src || shakerImg) && (
       <section className="split-section">
         <div className="split-content" style={{ background: "var(--bg-cream)" }}>
           <h2 className="serif" style={{ color: "var(--text-dark)" }}>
-            Never miss a rep. <em>Never miss a sip</em>
+            {shakerSplitBanner.title.includes(".") ? (
+              <>
+                {shakerSplitBanner.title.split(".")[0]}.{" "}
+                <em>{shakerSplitBanner.title.split(".").slice(1).join(".").trim()}</em>
+              </>
+            ) : (
+              shakerSplitBanner.title
+            )}
           </h2>
-          <p>
-            Crafted from shatterproof, BPA-free smoke Tritan with an integrated
-            cyclone turbine mixing wheel. The Favior Pro Series Shaker delivers
-            instantaneous, silky-smooth blending with a 100% leak-proof snap lock.
-          </p>
-          <a href="/shakers" className="btn btn-dark" style={{ alignSelf: "flex-start" }}>
-            Shop Shakers
+          {shakerSplitBanner.caption && <p>{shakerSplitBanner.caption}</p>}
+          <a href={shakerSplitBanner.linkUrl || "/shakers"} className="btn btn-dark" style={{ alignSelf: "flex-start" }}>
+            {shakerSplitBanner.cta || "Shop Shakers"}
           </a>
         </div>
         <div
@@ -246,8 +284,8 @@ export default async function Home() {
           }}
         >
           <Image
-            src={shakerImg}
-            alt="Favior Phantom Shaker Bottle"
+            src={shakerSplitBanner.src || shakerImg}
+            alt={shakerSplitBanner.alt || shakerSplitBanner.title}
             width={800}
             height={600}
             style={{
@@ -261,8 +299,8 @@ export default async function Home() {
       </section>
       )}
 
-      {/* ── Build Your Kit: DB Product Grid Banner ── */}
-      {kitImages.length > 0 && (
+      {/* ── Build Your Kit: Dynamic Multi-Image / Composite Banner ── */}
+      {kitBanner.isActive && (
       <section
         className="w-full overflow-hidden bg-white"
         style={{
@@ -279,33 +317,77 @@ export default async function Home() {
             margin: "0 auto",
             paddingLeft: "24px",
             paddingRight: "24px",
-            marginBottom: "24px",
+            marginBottom: "28px",
           }}
         >
           <h2
             className="font-heading font-bold uppercase tracking-tight"
             style={{ fontSize: "28px", lineHeight: "1.1", color: "#111111" }}
           >
-            Build Your Kit
+            {kitBanner.title || "Build Your Kit"}
           </h2>
+          {kitCaption && (
+            <p style={{ margin: "6px 0 0 0", fontSize: "14px", color: "#666666" }}>
+              {kitCaption}
+            </p>
+          )}
         </div>
 
-        {/* End-to-End High-Impact Combo Pack Banner */}
+        {/* Multi-Image Horizontal Showcase or Full-Width Combo Banner */}
         <Link
-          href="/products/favior-complete-gym-kit"
+          href={kitBanner.linkUrl || "/products/favior-complete-gym-kit"}
           className="group relative block w-full bg-white transition-opacity hover:opacity-95"
           style={{ width: "100%" }}
         >
-          <div className="relative w-full aspect-[16/7.5] sm:aspect-[2400/1100] min-h-[380px] sm:min-h-[480px] md:min-h-[560px] lg:min-h-[640px] bg-white flex items-center justify-center">
-            <Image
-              src="/favior_combo_pack_banner.jpg"
-              alt="Favior Complete Athlete Combo Pack Kit"
-              fill
-              priority
-              sizes="100vw"
-              className="object-contain w-full h-full transition-transform duration-700 ease-out group-hover:scale-[1.01]"
-            />
-          </div>
+          {kitBanner.images && kitBanner.images.length > 1 ? (
+            <div
+              style={{
+                maxWidth: "1320px",
+                margin: "0 auto",
+                paddingLeft: "24px",
+                paddingRight: "24px",
+                display: "grid",
+                gridTemplateColumns: `repeat(${Math.min(kitBanner.images.length, 4)}, minmax(0, 1fr))`,
+                gap: "28px",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: "360px",
+              }}
+            >
+              {kitBanner.images.map((imgSrc: string, i: number) => (
+                <div
+                  key={i}
+                  style={{
+                    position: "relative",
+                    width: "100%",
+                    height: "360px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Image
+                    src={imgSrc}
+                    alt={`${kitBanner.title || "Build Your Kit"} Item ${i + 1}`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="relative w-full aspect-[16/7.5] sm:aspect-[2400/1100] min-h-[380px] sm:min-h-[480px] md:min-h-[560px] lg:min-h-[640px] bg-white flex items-center justify-center">
+              <Image
+                src={kitBanner.src || "/favior_combo_pack_banner.jpg"}
+                alt={kitBanner.alt || kitBanner.title || "Favior Complete Athlete Combo Pack Kit"}
+                fill
+                priority
+                sizes="100vw"
+                className="object-contain w-full h-full transition-transform duration-700 ease-out group-hover:scale-[1.01]"
+              />
+            </div>
+          )}
         </Link>
 
         {/* Center Outlined CTA Button matching Bestsellers */}
@@ -317,14 +399,14 @@ export default async function Home() {
           }}
         >
           <Link
-            href="/products/favior-complete-gym-kit"
+            href={kitBanner.linkUrl || "/products/favior-complete-gym-kit"}
             className="inline-flex items-center justify-center bg-transparent hover:bg-[#111111] text-[#111111] hover:text-white border border-[#111111] text-[11px] font-semibold uppercase tracking-[0.18em] leading-none transition-colors duration-200 cursor-pointer"
             style={{
               padding: "16px 36px",
               lineHeight: 1,
             }}
           >
-            Buy Now
+            {kitBanner.cta || "Buy Now"}
           </Link>
         </div>
       </section>
