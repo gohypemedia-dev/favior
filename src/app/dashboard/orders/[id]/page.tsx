@@ -214,37 +214,37 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       <SidebarProvider className="min-h-svh">
         <AppSidebar />
         <SidebarInset>
-          <main style={{"minHeight":"100%","flex":"1 1 0%","backgroundColor":"rgb(245,245,245)","padding":"1rem","color":"rgb(0,0,0)"}}>
+          <main className="order-detail-page" style={{"minHeight":"100%","flex":"1 1 0%","minWidth":0,"backgroundColor":"rgb(245,245,245)","padding":"1.5rem","color":"rgb(0,0,0)"}}>
             {/* Top Navigation & Actions Bar */}
-            <div style={{"marginBottom":"1.5rem","display":"flex","flexWrap":"wrap","alignItems":"center","justifyContent":"space-between","gap":"1rem","borderBottomWidth":"1px","borderColor":"rgb(0,0,0,0.1)","paddingBottom":"1rem"}}>
-              <div style={{"display":"flex","alignItems":"center","gap":"0.75rem"}}>
+            <div className="order-detail-header" style={{"marginBottom":"1.5rem","display":"flex","flexWrap":"wrap","alignItems":"center","justifyContent":"space-between","gap":"1rem","borderBottomWidth":"1px","borderColor":"rgb(0,0,0,0.1)","paddingBottom":"1rem"}}>
+              <div style={{"display":"flex","minWidth":0,"flex":"1 1 28rem","alignItems":"center","gap":"0.75rem"}}>
                 <Link
                   href="/dashboard/orders"
-                  style={{"display":"inline-flex","alignItems":"center","justifyContent":"center","borderRadius":"0.5rem","borderWidth":"1px","backgroundColor":"rgb(0,0,0,0.05)","color":"rgb(0,0,0)"}}
+                  style={{"display":"inline-flex","width":"2.5rem","height":"2.5rem","flexShrink":0,"alignItems":"center","justifyContent":"center","borderRadius":"0.5rem","borderWidth":"1px","backgroundColor":"white","color":"rgb(0,0,0)"}}
                 >
                   <ArrowLeft className="size-4" />
                 </Link>
-                <div>
-                  <div style={{"display":"flex","alignItems":"center","gap":"0.625rem"}}>
-                    <h1 style={{"fontSize":"1.25rem","lineHeight":"1.75rem","fontWeight":"700","color":"rgb(0,0,0)"}}>{orderRef}</h1>
+                <div style={{"minWidth":0,"flex":"1 1 auto"}}>
+                  <div style={{"display":"flex","flexWrap":"wrap","alignItems":"center","gap":"0.625rem"}}>
+                    <h1 style={{"fontSize":"1.25rem","lineHeight":"1.75rem","fontWeight":"700","whiteSpace":"nowrap","color":"rgb(0,0,0)"}}>{orderRef}</h1>
                     <span style={{"display":"inline-flex","alignItems":"center","gap":"0.25rem","borderRadius":"0.375rem","backgroundColor":"rgb(209,250,229)","paddingLeft":"0.5rem","paddingRight":"0.5rem","paddingTop":"0.125rem","paddingBottom":"0.125rem","fontSize":"0.75rem","lineHeight":"1rem","fontWeight":"700","color":"rgb(6,95,70)"}}>
                       <Check className="size-3" /> PAID
                     </span>
                     {getFulfillmentBadge(order.status)}
                   </div>
-                  <p style={{"marginTop":"0.25rem","fontSize":"0.75rem","lineHeight":"1rem"}}>{formattedDate} from Online Store</p>
+                  <p style={{"marginTop":"0.25rem","fontSize":"0.8125rem","lineHeight":"1.25rem","color":"rgb(0,0,0,0.6)"}}>{formattedDate} from Online Store</p>
                 </div>
               </div>
 
               {/* Status Selector & Fulfillment Buttons */}
               <div style={{"display":"flex","flexWrap":"wrap","alignItems":"center","gap":"0.5rem"}}>
 
-                <div style={{"position":"relative","display":"inline-block"}}>
+                <div style={{"position":"relative","display":"inline-block","flexShrink":0}}>
                   <select
                     value={order.status}
                     disabled={isUpdating}
                     onChange={(e) => handleStatusChange(e.target.value)}
-                    style={{"height":"2.25rem","borderRadius":"0.5rem","borderWidth":"1px","backgroundColor":"rgb(0,0,0,0.05)","paddingLeft":"0.75rem","paddingRight":"2rem","fontSize":"0.75rem","lineHeight":"1rem","fontWeight":"600","color":"rgb(0,0,0,0.8)","outline":"2px solid transparent","outlineOffset":"2px","boxShadow":"0 0 0 0px #fff,   0 0 0 calc(2px + 0px) rgb(59,130,246,0.5), 0 0 #0000","opacity":"0.5"}}
+                    style={{"width":"15rem","maxWidth":"100%","height":"2.5rem","borderRadius":"0.5rem","borderWidth":"1px","backgroundColor":"white","paddingLeft":"0.75rem","paddingRight":"2rem","fontSize":"0.8125rem","lineHeight":"1rem","fontWeight":"600","color":"rgb(0,0,0,0.8)","opacity":isUpdating ? 0.6 : 1}}
                   >
                     <option value="PENDING">Status: Pending</option>
                     <option value="CONFIRMED">Status: Confirmed</option>
@@ -258,9 +258,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             </div>
 
             {/* 2-Column Shopify Style Layout */}
-            <div style={{"display":"grid","gridTemplateColumns":"repeat(1, minmax(0, 1fr))","gap":"1.5rem"}}>
+            <div className="order-detail-grid" style={{"display":"grid","gridTemplateColumns":"minmax(0, 1.8fr) minmax(17rem, 1fr)","alignItems":"start","gap":"1.25rem"}}>
               {/* LEFT COLUMN: Items & Payment Breakdown (70%) */}
-              <div style={{"marginTop":"calc(1.5rem * calc(1 - 0))","marginBottom":"calc(1.5rem * 0)"}}>
+                <div style={{"minWidth":0}}>
                 {/* Items Card */}
                 <div style={{"overflow":"hidden","borderRadius":"0.75rem","borderWidth":"1px","borderColor":"rgb(0,0,0,0.1)","backgroundColor":"rgb(255,255,255)","boxShadow":"0 0 #0000, 0 0 #0000, 0 1px 2px 0 rgb(0,0,0,0.05)"}}>
                   <div style={{"display":"flex","alignItems":"center","justifyContent":"space-between","borderBottomWidth":"1px","borderColor":"rgb(0,0,0,0.1)","backgroundColor":"rgb(0,0,0,0.02)","paddingLeft":"1.25rem","paddingRight":"1.25rem","paddingTop":"0.875rem","paddingBottom":"0.875rem"}}>
@@ -281,8 +281,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
                       return (
                         <div key={item.id} style={{"display":"flex","alignItems":"center","justifyContent":"space-between","gap":"1rem","padding":"1rem"}}>
-                          <div style={{"display":"flex","alignItems":"center","gap":"1rem"}}>
-                            <div style={{"position":"relative","flexShrink":"0","overflow":"hidden","borderRadius":"0.5rem","borderWidth":"1px","borderColor":"rgb(0,0,0,0.1)","backgroundColor":"rgb(255,255,255)","padding":"0.25rem"}}>
+                          <div style={{"display":"flex","minWidth":0,"alignItems":"center","gap":"1rem"}}>
+                            <div style={{"position":"relative","width":"4rem","height":"4rem","flexShrink":"0","overflow":"hidden","borderRadius":"0.75rem","borderWidth":"1px","borderColor":"rgb(0,0,0,0.1)","backgroundColor":"rgb(255,255,255)","padding":"0.25rem"}}>
                               <Image
                                 src={image}
                                 alt={name}
@@ -291,14 +291,14 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                 sizes="64px"
                               />
                             </div>
-                            <div>
+                            <div style={{"minWidth":0}}>
                               {slug ? (
                                 <Link
                                   href={`/product/${slug}`}
                                   target="_blank"
-                                  style={{"display":"inline-flex","alignItems":"center","gap":"0.25rem","fontSize":"0.875rem","lineHeight":"1.25rem","fontWeight":"600","color":"rgb(10,122,230)"}}
+                                  style={{"display":"inline-flex","maxWidth":"100%","alignItems":"center","gap":"0.25rem","fontSize":"0.875rem","lineHeight":"1.25rem","fontWeight":"600","color":"rgb(10,122,230)"}}
                                 >
-                                  <span>{name}</span>
+                                  <span style={{"overflow":"hidden","textOverflow":"ellipsis","whiteSpace":"nowrap"}}>{name}</span>
                                   <ExternalLink style={{"opacity":"1","transitionProperty":"opacity","transitionTimingFunction":"cubic-bezier(0.4, 0, 0.2, 1)","transitionDuration":"150ms"}} />
                                 </Link>
                               ) : (
@@ -357,24 +357,24 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
 
                 {/* Timeline Card */}
-                <div style={{"overflow":"hidden","borderRadius":"0.75rem","borderWidth":"1px","borderColor":"rgb(0,0,0,0.1)","backgroundColor":"rgb(255,255,255)","padding":"1.25rem","boxShadow":"0 0 #0000, 0 0 #0000, 0 1px 2px 0 rgb(0,0,0,0.05)"}}>
+                <div style={{"position":"relative","overflow":"hidden","borderRadius":"0.75rem","borderWidth":"1px","borderColor":"rgb(0,0,0,0.1)","backgroundColor":"rgb(255,255,255)","padding":"1.25rem","boxShadow":"0 0 #0000, 0 0 #0000, 0 1px 2px 0 rgb(0,0,0,0.05)"}}>
                   <h3 style={{"marginBottom":"1rem","display":"flex","alignItems":"center","gap":"0.5rem","fontSize":"0.75rem","lineHeight":"1rem","fontWeight":"700","textTransform":"uppercase","letterSpacing":"0.05em","color":"rgb(0,0,0,0.75)"}}>
                     <Clock style={{"color":"rgb(0,0,0,0.6)"}} />
                     <span>Order Timeline</span>
                   </h3>
-                  <div style={{"position":"absolute","marginTop":"calc(1rem * calc(1 - 0))","marginBottom":"calc(1rem * 0)","paddingLeft":"1.5rem","content":"undefined","bottom":"0.5rem","left":"0.5rem","top":"0.5rem","width":"0.125rem","backgroundColor":"rgb(0,0,0,0.1)"}}>
+                  <div style={{"position":"relative","display":"grid","gap":"0.875rem","marginTop":"1rem","marginLeft":"0.5rem","paddingLeft":"1rem","borderLeft":"2px solid rgb(0,0,0,0.1)"}}>
                     <div style={{"position":"relative"}}>
-                      <span style={{"position":"absolute","left":"-1.5rem","top":"0.125rem","borderRadius":"9999px","backgroundColor":"rgb(16,185,129)","boxShadow":"0 0 0 0px #fff,   0 0 0 calc(4px + 0px) rgb(59,130,246,0.5), 0 0 #0000"}} />
+                      <span style={{"position":"absolute","left":"-1.35rem","top":"0.2rem","width":"0.5rem","height":"0.5rem","borderRadius":"9999px","backgroundColor":"rgb(16,185,129)"}} />
                       <p style={{"fontSize":"0.75rem","lineHeight":"1rem","fontWeight":"600","color":"rgb(0,0,0)"}}>Order Placed Successfully</p>
                       <p style={{"fontSize":"11px"}}>{formattedDate}</p>
                     </div>
                     <div style={{"position":"relative"}}>
-                      <span style={{"position":"absolute","left":"-1.5rem","top":"0.125rem","borderRadius":"9999px","backgroundColor":"rgb(59,130,246)","boxShadow":"0 0 0 0px #fff,   0 0 0 calc(4px + 0px) rgb(59,130,246,0.5), 0 0 #0000"}} />
+                      <span style={{"position":"absolute","left":"-1.35rem","top":"0.2rem","width":"0.5rem","height":"0.5rem","borderRadius":"9999px","backgroundColor":"rgb(59,130,246)"}} />
                       <p style={{"fontSize":"0.75rem","lineHeight":"1rem","fontWeight":"600","color":"rgb(0,0,0)"}}>Confirmation email sent to {order.user.email}</p>
                     </div>
                     {isFulfilled && (
                       <div style={{"position":"relative"}}>
-                        <span style={{"position":"absolute","left":"-1.5rem","top":"0.125rem","borderRadius":"9999px","backgroundColor":"rgb(5,150,105)","boxShadow":"0 0 0 0px #fff,   0 0 0 calc(4px + 0px) rgb(59,130,246,0.5), 0 0 #0000"}} />
+                        <span style={{"position":"absolute","left":"-1.35rem","top":"0.2rem","width":"0.5rem","height":"0.5rem","borderRadius":"9999px","backgroundColor":"rgb(5,150,105)"}} />
                         <p style={{"fontSize":"0.75rem","lineHeight":"1rem","fontWeight":"600","color":"rgb(0,0,0)"}}>Order fulfilled and dispatched</p>
                       </div>
                     )}
@@ -383,7 +383,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               </div>
 
               {/* RIGHT COLUMN: Customer & Shipping (30%) */}
-              <div style={{"marginTop":"calc(1.5rem * calc(1 - 0))","marginBottom":"calc(1.5rem * 0)"}}>
+              <div style={{"minWidth":0}}>
                 {/* Customer Details Card */}
                 <div style={{"marginTop":"calc(0.75rem * calc(1 - 0))","marginBottom":"calc(0.75rem * 0)","overflow":"hidden","borderRadius":"0.75rem","borderWidth":"1px","borderColor":"rgb(0,0,0,0.1)","backgroundColor":"rgb(255,255,255)","padding":"1.25rem","boxShadow":"0 0 #0000, 0 0 #0000, 0 1px 2px 0 rgb(0,0,0,0.05)"}}>
                   <h3 style={{"display":"flex","alignItems":"center","gap":"0.5rem","fontSize":"0.75rem","lineHeight":"1rem","fontWeight":"700","textTransform":"uppercase","letterSpacing":"0.05em","color":"rgb(0,0,0,0.75)"}}>

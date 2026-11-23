@@ -24,6 +24,46 @@
   outline-offset: 2px;
 }
 
+/* Order detail: keep the summary readable beside the customer information. */
+.order-detail-page {
+  width: 100%;
+  max-width: 100%;
+}
+
+.order-detail-header > :first-child {
+  flex: 1 1 28rem;
+}
+
+.order-detail-grid > * {
+  min-width: 0;
+}
+
+.order-detail-grid a,
+.order-detail-grid p,
+.order-detail-grid span {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+  .order-detail-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .order-detail-page {
+    padding: 1rem !important;
+  }
+
+  .order-detail-header {
+    align-items: flex-start !important;
+  }
+
+  .order-detail-header select {
+    width: min(15rem, calc(100vw - 5rem)) !important;
+  }
+}
+
 /* Sidebar custom styles matching Shopify/Linear design */
 [data-sidebar="sidebar"] {
   background-color: #ebebeb !important;
