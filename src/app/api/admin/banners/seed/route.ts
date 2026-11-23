@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { verifySession } from "@/lib/server/dal/auth"
 import { listBanners, DEFAULT_HERO_BANNERS } from "@/lib/server/controllers/banners.controller"
 import { db } from "@/lib/db"
+import { PRODUCT_HIGHLIGHT_IDS } from "@/lib/product-highlights"
 
 export async function POST() {
   const session = await verifySession()
@@ -12,7 +13,7 @@ export async function POST() {
   try {
     for (const banner of DEFAULT_HERO_BANNERS) {
       const existing = await (db as any).heroBanner.findFirst({
-        where: { src: banner.src },
+        where: { src: banner.src, id: { notIn: PRODUCT_HIGHLIGHT_IDS } },
       })
       if (!existing) {
         await (db as any).heroBanner.create({ data: banner })

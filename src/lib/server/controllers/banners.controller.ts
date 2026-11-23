@@ -1,4 +1,7 @@
 import { db } from "@/lib/db"
+import { PRODUCT_HIGHLIGHT_IDS } from "@/lib/product-highlights"
+
+const excludeProductHighlights = { id: { notIn: PRODUCT_HIGHLIGHT_IDS } }
 
 export type HeroBannerItem = {
   id: string
@@ -99,7 +102,7 @@ export const DEFAULT_HERO_BANNERS = [
 
 export async function ensureDefaultBannersSeeded() {
   try {
-    const count = await (db as any).heroBanner.count()
+    const count = await (db as any).heroBanner.count({ where: excludeProductHighlights })
     if (count === 0) {
       for (const banner of DEFAULT_HERO_BANNERS) {
         await (db as any).heroBanner.create({ data: banner })
@@ -184,7 +187,7 @@ export async function ensureDefaultBannersSeeded() {
 
 export async function listBanners(category?: string) {
   await ensureDefaultBannersSeeded()
-  const where: any = {}
+  const where: any = { ...excludeProductHighlights }
   if (category && category !== "all") {
     if (category === "hero") {
       where.OR = [{ category: "hero" }, { category: null }]
@@ -202,7 +205,7 @@ export async function listBanners(category?: string) {
 
 export async function listActiveBanners(category?: string) {
   await ensureDefaultBannersSeeded()
-  const where: any = { isActive: true }
+  const where: any = { ...excludeProductHighlights, isActive: true }
   if (category && category !== "all") {
     if (category === "hero") {
       where.OR = [{ category: "hero" }, { category: null }]
@@ -265,18 +268,21 @@ export async function updateBanner(
   }>
 ) {
   return (db as any).heroBanner.update({
-    where: { id },
+    where: { id, NOT: { id: { in: PRODUCT_HIGHLIGHT_IDS } } },
     data,
   })
 }
 
 export async function deleteBanner(id: string) {
   return (db as any).heroBanner.delete({
-    where: { id },
+    where: { id, NOT: { id: { in: PRODUCT_HIGHLIGHT_IDS } } },
   })
 }
 
 export async function reorderBanners(bannerIds: string[]) {
+  if (bannerIds.some((id) => PRODUCT_HIGHLIGHT_IDS.includes(id))) {
+    throw new Error("Product highlights are managed in their own section.")
+  }
   const updates = bannerIds.map((id, index) =>
     (db as any).heroBanner.update({
       where: { id },

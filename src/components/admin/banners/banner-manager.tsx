@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, type ReactNode } from "react"
 import Image from "next/image"
 import {
   PlusIcon,
@@ -35,7 +35,7 @@ const BANNER_TYPE_OPTIONS = [
   { value: "promotional", label: "Promotional / Sale Banner", desc: "Campaign drops, seasonal sale highlights." },
 ]
 
-export function BannerManager({ initialBanners }: { initialBanners: HeroBannerItem[] }) {
+export function BannerManager({ initialBanners, children }: { initialBanners: HeroBannerItem[]; children: ReactNode }) {
   const [banners, setBanners] = useState<HeroBannerItem[]>(initialBanners)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingBanner, setEditingBanner] = useState<HeroBannerItem | null>(null)
@@ -912,6 +912,8 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroBannerIt
           })}
         </div>
       )}
+
+      {children}
 
       {/* Spacious 2-Column Add / Edit Banner Modal */}
       {isModalOpen && (

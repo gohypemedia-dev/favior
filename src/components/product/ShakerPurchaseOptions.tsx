@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import type { ThreeDShakerData } from "@/lib/server/controllers/three-d-shaker.controller";
 import { getShakerCartItem } from "@/lib/shaker-product";
+import styles from "./ShakerPurchaseOptions.module.css";
 
 export function ShakerPurchaseOptions({
   shaker,
@@ -26,27 +27,27 @@ export function ShakerPurchaseOptions({
   }
 
   return (
-    <div className="mt-6">
+    <div className={styles.purchaseOptions}>
       <p aria-live="polite" className="text-2xl font-semibold tabular-nums">
         {item.price}
       </p>
-      <fieldset className="mt-4">
-        <legend className="mb-2 text-sm font-semibold">Capacity</legend>
-        <div className="flex flex-wrap gap-2">
+      <fieldset className={styles.capacity}>
+        <legend className={styles.label}>Capacity</legend>
+        <div className={styles.sizes}>
           {shaker.variants.map((option) => (
             <button
               key={option.name}
               type="button"
               aria-pressed={option.name === variant.name}
               onClick={() => setSize(option.name)}
-              className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-semibold hover:border-black aria-pressed:border-black aria-pressed:bg-black aria-pressed:text-white"
+              className={styles.sizeButton}
             >
               {option.name}
             </button>
           ))}
         </div>
       </fieldset>
-      <div className="hero-action-row mt-5">
+      <div className={`hero-action-row ${styles.actions}`}>
         <button type="button" onClick={buyNow} className="hero-btn-buy">Buy Now</button>
         <button type="button" onClick={() => addToCart(item)} className="hero-btn-cart">Add to Cart</button>
       </div>

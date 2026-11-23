@@ -1,0 +1,51 @@
+.purchaseOptions {
+  display: grid;
+  gap: 16px;
+  margin-block-start: 24px;
+}
+
+.capacity {
+  min-inline-size: 0;
+}
+
+.label {
+  margin-block-end: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sizeButton {
+  min-inline-size: 88px;
+  min-block-size: 44px;
+  padding: 8px 16px;
+  border: 1px solid #d4d4d8;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sizeButton:hover {
+  border-color: #000;
+}
+
+.sizeButton[aria-pressed="true"] {
+  border-color: #000;
+  background-color: #000;
+  color: #fff;
+}
+
+.sizeButton:focus-visible {
+  outline: 2px solid #000;
+  outline-offset: 2px;
+}
+
+.purchaseOptions > .actions {
+  margin-inline: 0;
+}

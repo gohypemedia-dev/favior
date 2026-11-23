@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { cache } from "react";
-import Link from "next/link";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import Navbar from "@/components/Navbar";
 import SiteFooter from "@/components/SiteFooter";
@@ -34,12 +33,6 @@ export default async function ShakerProductPage({
       <AnnouncementBar />
       <Navbar />
       <main className="mx-auto w-full max-w-6xl flex-1 px-5 pb-16 pt-24 sm:px-8 sm:pt-28">
-        <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-2 text-sm text-zinc-600">
-          <Link href="/" className="hover:text-black">Home</Link>
-          <span aria-hidden="true">/</span>
-          <span aria-current="page">{shaker.title}</span>
-        </nav>
-
         <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-14">
           <div className="h-[340px] rounded-2xl border border-zinc-100 bg-zinc-50 sm:h-[460px]">
             <Model3D

@@ -6,6 +6,7 @@ import { ProductPage } from "@/components/product/ProductPage";
 import FaqSection from "@/components/FaqSection";
 import SiteFooter from "@/components/SiteFooter";
 import { db } from "@/lib/db";
+import { getProductHighlights } from "@/lib/server/controllers/product-highlights.controller";
 import type { ProductDetail } from "@/components/product/productData";
 
 export const dynamic = "force-dynamic";
@@ -228,7 +229,6 @@ function mapToProductDetail(p: any): ProductDetail {
       { label: "Tracked shipping", detail: "Live updates", icon: "card" },
     ],
     completeLook: [],
-    highlights: [],
   };
 }
 
@@ -263,7 +263,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const product = mapToProductDetail(dbProduct);
+  const product = { ...mapToProductDetail(dbProduct), highlights: await getProductHighlights() };
 
   return (
     <div className="min-h-screen flex flex-col bg-white">

@@ -2,24 +2,8 @@
 
 import React from "react";
 import Image from "next/image";
+import { DEFAULT_PRODUCT_HIGHLIGHTS } from "@/lib/product-highlights";
 import type { HighlightBlock } from "@/types/product";
-
-const DEFAULT_HIGHLIGHTS: HighlightBlock[] = [
-  {
-    title: "Precision Food-Grade Steel",
-    description:
-      "Meticulously sculpted from aerospace-grade 18/8 stainless steel. Undergoes multi-stage vibration tumbling and precision polishing for exceptional tensile strength and lasting scratch resistance.",
-    imageSrc: "/favior_pro_shaker_black.jpg",
-    imageAlt: "Precision stainless steel detail view",
-  },
-  {
-    title: "High-Density Ballistic Canvas",
-    description:
-      "Reinforced heavy-duty water-resistant construction designed for rugged daily gym use. Engineered to distribute weight evenly with reinforced stress points and antique brass hardware.",
-    imageSrc: "/favior_heritage_duffle_bag.jpg",
-    imageAlt: "High-density ballistic canvas and structural engineering",
-  },
-];
 
 export function ProductHighlights({
   highlights,
@@ -28,7 +12,7 @@ export function ProductHighlights({
   highlights?: HighlightBlock[];
   className?: string;
 }) {
-  const data = highlights && highlights.length > 0 ? highlights : DEFAULT_HIGHLIGHTS;
+  const data = highlights && highlights.length > 0 ? highlights : DEFAULT_PRODUCT_HIGHLIGHTS;
 
   return (
     <section
@@ -81,7 +65,7 @@ export function ProductHighlights({
 
             return (
               <div
-                key={block.title}
+                key={index}
                 className="highlight-row"
                 style={{
                   display: "grid",
