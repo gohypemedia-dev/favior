@@ -9,7 +9,8 @@
   min-height: 100svh;
   color: var(--admin-ink);
   background: var(--admin-canvas);
-  overflow-x: hidden;
+  /* Keep horizontal clipping from creating a second vertical scrollport. */
+  overflow-x: clip;
 }
 
 .dashboard-shell :where(button, a, input, select, textarea) {
