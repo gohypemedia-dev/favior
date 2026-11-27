@@ -56,7 +56,7 @@ export const productsCatalog: Record<string, ProductDetailItem> = {
       { label: "Material", value: "BPA-Free Tritan" },
       { label: "Care", value: "Dishwasher Safe" },
     ],
-    shippingNotice: "Free 2-day shipping on orders above RS. 5,000",
+    shippingNotice: "Free 2-day shipping on orders above ₹1,999",
     mainImage: "/favior_pro_shaker_black.jpg",
   },
   "the-aube-wrist-wraps": {
@@ -85,7 +85,7 @@ export const productsCatalog: Record<string, ProductDetailItem> = {
       { label: "Material", value: "Cotton, Elastic, Polyester Blend" },
       { label: "Level", value: "Professional Heavy Duty" },
     ],
-    shippingNotice: "Free 2-day shipping on orders above RS. 5,000",
+    shippingNotice: "Free 2-day shipping on orders above ₹1,999",
     mainImage: "/favior_complete_gym_kit.jpg",
   },
   "favior-resistance-bands": {
@@ -110,7 +110,7 @@ export const productsCatalog: Record<string, ProductDetailItem> = {
       { label: "Levels", value: "Light, Medium, Heavy" },
       { label: "Material", value: "Premium Fabric & Latex Blend" },
     ],
-    shippingNotice: "Free 2-day shipping on orders above RS. 5,000",
+    shippingNotice: "Free 2-day shipping on orders above ₹1,999",
     mainImage: "/favior_luxury_towel.jpg",
   },
   "favior-complete-kit": {

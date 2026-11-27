@@ -312,7 +312,7 @@ export function CollectionPage({
                     margin: 0,
                   }}
                 >
-                  Complimentary express shipping over ₹999.
+                  Complimentary express shipping over ₹1,999.
                 </p>
               </div>
             </div>

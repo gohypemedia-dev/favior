@@ -283,7 +283,7 @@ export function ProductSummary({
               margin: "6px 0 0 0",
             }}
           >
-            {product.shippingNotice || "INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹999"}
+            {product.shippingNotice || "INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹1,999"}
           </p>
         </div>
 
@@ -1002,7 +1002,7 @@ export function ProductSummary({
           }}
         >
           {[
-            { icon: Truck, label: "FREE SHIPPING", sub: "ON ORDERS ABOVE ₹999" },
+            { icon: Truck, label: "FREE SHIPPING", sub: "ON ORDERS ABOVE ₹1,999" },
             { icon: RefreshCcw, label: "EASY EXCHANGE", sub: "7-DAY POLICY" },
             { icon: ShieldCheck, label: "SECURE PAY", sub: "100% SAFE CHECKOUT" },
           ].map((badge, idx) => {

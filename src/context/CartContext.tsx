@@ -51,7 +51,7 @@ interface CartContextType {
 }
 
 const STORAGE_KEY = "favior_shopping_cart";
-const FREE_SHIPPING_THRESHOLD = 5000; // ₹5,000 threshold for free shipping
+const FREE_SHIPPING_THRESHOLD = 1999; // ₹1,999 threshold for free shipping
 
 export function parseNumericPrice(price?: string | number): number {
   if (typeof price === "number") return price;

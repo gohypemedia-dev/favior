@@ -149,7 +149,7 @@ export function ProductBadgesSection({
           <input
             value={shippingNotice}
             onChange={(e) => setShippingNotice(e.target.value)}
-            placeholder="INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹999"
+            placeholder="INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹1,999"
             style={inputStyle}
           />
         </label>

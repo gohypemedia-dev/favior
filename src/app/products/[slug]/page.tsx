@@ -197,7 +197,7 @@ function mapToProductDetail(p: any): ProductDetail {
     rating: (p.rating || 4.9).toString(),
     reviewsCount: p.reviewsCount || "128",
     socialProofText: p.socialProofText || "1,238+ SOLD TODAY • LOVED BY THE COMMUNITY",
-    shippingNotice: p.shippingNotice || "INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹999",
+    shippingNotice: p.shippingNotice || "INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹1,999",
     description: p.description,
     detailsBody: p.detailsBody || p.description,
     specifications:
@@ -215,7 +215,7 @@ function mapToProductDetail(p: any): ProductDetail {
       p.shippingNotes && p.shippingNotes.length > 0
         ? p.shippingNotes
         : [
-            p.shippingNotice || "INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹999",
+            p.shippingNotice || "INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹1,999",
             "100% genuine product guarantee with instant replacement warranty.",
           ],
     colorName: finalColors[0].name,

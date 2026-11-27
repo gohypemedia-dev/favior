@@ -105,7 +105,7 @@ model Product {
   description       String
   detailsBody       String?  @map("details_body")
   mainImage         String   @map("main_image")
-  shippingNotice    String   @default("INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹999") @map("shipping_notice")
+  shippingNotice    String   @default("INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹1,999") @map("shipping_notice")
   quantity          Int      @default(0)
   showInBestSellers Boolean  @default(false) @map("show_in_best_sellers")
   sizes             String[] @default([])

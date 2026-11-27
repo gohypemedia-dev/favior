@@ -52,7 +52,7 @@ export default function ShippingPage() {
                     <tr style={{ borderBottom: "1px solid #f4f4f5" }}>
                       <td style={{ padding: "1rem 0" }}>Standard Shipping</td>
                       <td style={{ padding: "1rem 0" }}>3 to 5 business days</td>
-                      <td style={{ padding: "1rem 0", textAlign: "right" }}>Free over Rs. 5000 (Else Rs. 200)</td>
+                      <td style={{ padding: "1rem 0", textAlign: "right" }}>Free over ₹1,999 (Else Rs. 200)</td>
                     </tr>
                     <tr style={{ borderBottom: "1px solid #f4f4f5" }}>
                       <td style={{ padding: "1rem 0" }}>Express Shipping</td>

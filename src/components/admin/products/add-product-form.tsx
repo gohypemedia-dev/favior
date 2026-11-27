@@ -68,7 +68,7 @@ export function AddProductForm({ categories }: { categories: ProductCategoryOpti
   const [subtitle, setSubtitle] = useState("FAVIOR PRO ATHLETICS");
   const [verifiedBadge, setVerifiedBadge] = useState("88 VERIFIED ORDERS");
   const [socialProofText, setSocialProofText] = useState("1,238+ SOLD TODAY • LOVED BY THE COMMUNITY");
-  const [shippingNotice, setShippingNotice] = useState("INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹999");
+  const [shippingNotice, setShippingNotice] = useState("INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹1,999");
   const [rating, setRating] = useState("4.9");
   const [reviewsCount, setReviewsCount] = useState("128");
   const [colors, setColors] = useState<ColorItem[]>([{ name: "Classic Black", bgHex: "#111111" }]);
@@ -137,7 +137,7 @@ export function AddProductForm({ categories }: { categories: ProductCategoryOpti
           subtitle: subtitle.trim() || null,
           verifiedBadge: verifiedBadge.trim() || null,
           socialProofText: socialProofText.trim() || null,
-          shippingNotice: shippingNotice.trim() || "INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹999",
+          shippingNotice: shippingNotice.trim() || "INCL. OF ALL TAXES • FREE SHIPPING ABOVE ₹1,999",
           rating: Number(rating) || 4.9,
           reviewsCount: reviewsCount.trim() || "128",
           detailsBody: detailsBody.trim() || null,
